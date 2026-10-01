@@ -154,3 +154,8 @@ description = "Pasa la lógica de un notebook de Databricks (.py/.ipynb) a un m�
 type = "skill"
 version = "1.0.0"
 description = "Documentación funcional en español de pipelines/modelos (plantilla de 9 secciones); script data_flow.py."
+
+[items.ml-review]
+type = "skill"
+version = "1.0.0"
+description = "Revisión de código ML sin editar: leakage, splits, semillas, métricas, MLflow (sklearn, XGBoost, LightGBM, Spark ML)."

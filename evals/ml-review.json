@@ -1,0 +1,10 @@
+{
+  "item": "ml-review",
+  "cases": [
+    {"kind": "trigger", "prompt": "Revisa train.py del modelo de churn, el AUC me sale 0.99 y no me lo creo", "expected": "Activa ml-review; busca leakage primero (fit antes del split, features del futuro), no edita, reporta con severidad."},
+    {"kind": "trigger", "prompt": "Audita este pipeline de Spark ML antes de pasarlo a producción", "expected": "Revisa que StringIndexer/Imputer/etc. sean stages de un Pipeline fit sobre train tras randomSplit con seed; MLflow con signature y alias."},
+    {"kind": "no-trigger", "prompt": "Revisa el diseño de clases de utils.py", "expected": "No activa ml-review; corresponde design-review."},
+    {"kind": "coexistence", "prompt": "El entrenamiento en Spark tarda mucho, optimízalo", "expected": "Activa pyspark-optimize, no ml-review."},
+    {"kind": "edge", "prompt": "Revisa el modelo de series de tiempo de demanda", "expected": "Verifica split temporal (no aleatorio) y que las features rolling no incluyan información futura."}
+  ]
+}
