@@ -232,3 +232,20 @@ Ninguna bloqueante. Decisiones cerradas el 2026-09-30:
    - **Bug de convivencia encontrado en la prueba real:** el uninstall de graphify se llevaba el marcador
      de inicio del bloque de cuypilot. Se corrigió poniendo el marcador en la línea del encabezado H2
      (ver CHANGELOG 0.2.0).
+
+## Enmienda 2026-10-01: solo pip (sin uv ni pipx)
+
+En el entorno de trabajo **no se pueden usar uv ni pipx**. Cambios:
+
+- **Herramientas:** el catálogo ya no guarda comandos de instalación, sino el paquete fijado
+  (`package = "graphifyy==0.9.73"`). cuypilot lo instala con
+  `python -m pip install <paquete>` usando **el mismo Python con el que corre cuypilot**, es decir, el
+  entorno virtual del proyecto. Para encontrar los ejecutables de las herramientas (`graphify`,
+  `pyspark-antipattern`), busca también en la carpeta `bin`/`Scripts` de ese entorno, aunque no esté
+  activado.
+- **Consecuencia:** cada herramienta queda instalada en el entorno virtual del proyecto, no a nivel de
+  usuario. Copilot la encuentra en las terminales de VS Code que tengan ese entorno activado (la extensión
+  de Python lo activa por defecto).
+- **Build y desarrollo de cuypilot:** el backend pasa de `uv_build` a `setuptools`. El build se hace con
+  `python -m build` y el desarrollo con `pip install -e . --group dev`.
+- **CI:** `actions/setup-python` + pip (funciona también en runners de GitHub Enterprise).
