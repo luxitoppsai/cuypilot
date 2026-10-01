@@ -164,3 +164,11 @@ description = "Revisión de código ML sin editar: leakage, splits, semillas, m�
 type = "skill"
 version = "1.0.0"
 description = "Crea o repara docs/ con Sphinx: sección técnica (autodoc/autosummary) y funcional (MyST), tema furo, build sin warnings."
+
+[items.pyspark-antipattern]
+type = "tool"
+version = "0.4.1"
+description = "Linter externo de PySpark (60+ reglas, Rust) que complementa a spark_lint.py; solo terminal."
+license = "MIT"
+install = [["uv", "tool", "install", "pyspark-antipattern==0.4.1"]]
+check = ["pyspark-antipattern", "--version"]

@@ -119,7 +119,7 @@ def test_third_party_is_traceable_and_licensed(item):
 def test_tool_is_well_formed(tool):
     assert re.match(r"^\d+\.\d+\.\d+$", tool.version)
     assert tool.license in ALLOWED_LICENSES, f"licencia no permitida: {tool.license}"
-    assert tool.check and tool.install and tool.configure, "check, install y configure son obligatorios"
+    assert tool.check and tool.install, "check e install son obligatorios (configure es opcional)"
     for cmd in (*tool.install, *tool.configure, *tool.uninstall, tool.check):
         assert isinstance(cmd, tuple) and all(isinstance(a, str) for a in cmd), (
             "cada comando es una lista de str"

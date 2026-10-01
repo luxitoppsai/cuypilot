@@ -17,7 +17,7 @@ Assume Databricks Runtime 15.4 LTS or newer (Spark ≥3.5, Python ≥3.11) unles
    python .github/skills/pyspark-optimize/scripts/spark_lint.py <path>
    ```
 
-   If the `pyspark-antipattern` tool is installed (`pyspark-antipattern --version` works), also run `pyspark-antipattern check <path>` for extra rules.
+   If the `pyspark-antipattern` tool is installed (`pyspark-antipattern --version` works), also run it for extra rules, without colors: `NO_COLOR=1 pyspark-antipattern check <path>` (PowerShell: `$env:NO_COLOR=1; pyspark-antipattern check <path>`). Its codes differ from `spark_lint.py` (e.g. `L003`, `D001`); treat duplicates as one finding.
 2. **Prioritize** HIGH findings, then MEDIUM. Read only the reported locations and their direct context.
 3. **Confirm before changing** anything whose impact depends on data volume (`collect()`, `toPandas()`, broadcast): ask the user or look for evidence (table sizes, comments, `limit`).
 4. **Secure the result.** If there are tests for the transformation, run them before and after. If not, propose a small test first (see the `pyspark-testing` skill if installed). Never change semantics silently: null handling, duplicates, ordering and data types must stay identical.

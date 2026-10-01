@@ -55,7 +55,7 @@ Si una parte del trabajo es determinista (contar, listar, medir), conviértela e
 
 Para programas externos que tienen su propio instalador (por ejemplo `graphify`). En `catalog.toml`:
 
-- `install`, `configure`, `uninstall` y `check` son **listas de argumentos**: nunca un shell, `|` ni `&&`.
+- `install`, `configure`, `uninstall` y `check` son **listas de argumentos**: nunca un shell, `|` ni `&&`. `configure` y `uninstall` son opcionales (herramientas de solo terminal).
 - `install` fija la **versión aprobada** (igual a `version`).
 - `gitignore`: lo que la herramienta genera en el repo.
 - `instructions`: regla de uso seguro que se agrega al bloque gestionado mientras esté instalada.
