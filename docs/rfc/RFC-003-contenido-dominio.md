@@ -2,7 +2,7 @@
 type: rfc
 proyecto: "cuypilot"
 rfc: RFC-003
-estado: borrador   # borrador | en-revision | aceptado | rechazado | superado
+estado: aceptado   # borrador | en-revision | aceptado | rechazado | superado
 fecha: 2026-09-30
 tags: [rfc, contrato, pyspark, ml, documentacion]
 ---
@@ -188,20 +188,16 @@ Lo que el código no revela (propósito, responsables, calendario) **lo pregunta
 
 ### 4.7 Compatibilidad con los runtimes del equipo
 
-| Runtime | Spark | Python | Notas que aplican las skills |
-|---|---|---|---|
-| Databricks Runtime 13.3 LTS (**sin soporte de Databricks**) | 3.4.1 | 3.10 | Sin `assertDataFrameEqual`: comparar esquema + `sorted(collect())`. `spark.sql(args=...)` solo con literales SQL en texto. Liquid clustering solo en vista previa: usar particionado/ZORDER |
-| Databricks Runtime 15.4 LTS | 3.5.0 | 3.11 | `assertDataFrameEqual` disponible; `spark.sql(args=...)` con valores Python; liquid clustering GA para tablas nuevas |
+El runtime mínimo del equipo es **Databricks Runtime 15.4 LTS** (Spark 3.5.0, Python 3.11). Las skills
+asumen Spark ≥3.5 y Python ≥3.11, lo que coincide con el mínimo de cuypilot (RFC-001). Por eso:
 
-Las skills preguntan o detectan (`workspace_context.py`, versión de `pyspark` o `databricks-connect` en las
-dependencias) en qué runtime está el proyecto, y dan la recomendación correspondiente.
+- `pyspark.testing.assertDataFrameEqual` está disponible.
+- `spark.sql(query, args={...})` acepta valores Python (consultas parametrizadas).
+- Liquid clustering es GA: es la recomendación para tablas Delta nuevas, en lugar de particionado o ZORDER.
 
-**Impacto en cuypilot:** para que los proyectos de 13.3 (Python 3.10) puedan usarlo, cuypilot y sus
-scripts pasan a requerir **Python ≥3.10**:
-- la CLI lee `catalog.toml` con `tomllib`, o con `tomli` en 3.10 (dependencia condicional mínima);
-- los scripts no usan `tomllib` (o lo importan con alternativa) y el CI compila todos los scripts con 3.10.
-
-Esto cambia una decisión de RFC-001 (§10, punto 1) y queda pendiente de confirmación (§10).
+Si un proyecto usa un runtime más nuevo (Spark 4.x), las skills lo detectan por las dependencias
+(`pyspark` / `databricks-connect`) y mencionan las diferencias relevantes (por ejemplo, ANSI SQL activado
+por defecto en Spark 4).
 
 ### 4.8 `cuypilot init`: wizard con banner
 
@@ -272,7 +268,7 @@ No. Scripts deterministas y skills; el agente es Copilot.
 | Una "optimización" que cambia el resultado | Una regla a la vez, con tests antes del cambio (`pyspark-testing`) |
 | Documentación funcional inventada | `[COMPLETAR]` en lo que el código no revela; la skill lo prohíbe explícitamente |
 | Demasiadas skills de "revisión" compitiendo (`design-review`, `ml-review`, `ponytail-audit`, `pyspark-optimize`) | Descripciones con "cuándo sí / cuándo no" y evals de coexistencia; combinaciones por rol en la guía |
-| Diferencias entre versiones de Spark del equipo | Guías marcadas por versión (por ejemplo, `assertDataFrameEqual` ≥3.5; ANSI por defecto en 4.x) |
+| Diferencias entre versiones de Spark | Mínimo 15.4 LTS (Spark 3.5); las diferencias con Spark 4.x se mencionan cuando se detectan |
 
 ## 8. Plan de entrega
 
@@ -297,7 +293,7 @@ No. Scripts deterministas y skills; el agente es Copilot.
 
 Decisiones del 2026-09-30:
 - Entran las 6 skills.
-- Runtimes 13.3 LTS y 15.4 LTS (§4.7).
+- Runtime mínimo: Databricks Runtime 15.4 LTS (Spark 3.5, Python 3.11); cuypilot mantiene Python ≥3.11 (§4.7).
 - Notebooks `.py` e `.ipynb`.
 - Documentación funcional con la plantilla de §4.6, siempre en español.
 - Docstrings Sphinx (reST), sin tema corporativo → `furo` por defecto.
@@ -305,7 +301,4 @@ Decisiones del 2026-09-30:
 - ML: scikit-learn, XGBoost y LightGBM con MLflow, y también Spark ML.
 - Nuevo: wizard `cuypilot init` con banner (§4.8).
 
-Pendiente de confirmar:
-
-1. **Python ≥3.10** para cuypilot (antes ≥3.11), para soportar proyectos de 13.3 LTS (§4.7).
-2. ¿El runtime es **13.3 LTS**? (no existe un 13.5 LTS). Ojo: 13.3 ya no tiene soporte de Databricks.
+Sin preguntas pendientes.
