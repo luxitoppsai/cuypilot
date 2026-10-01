@@ -12,7 +12,13 @@ Goal: rewrite the user's rough request into a prompt that an agent can execute w
 ## Workflow
 
 1. **Read the rough request** (the text after `/improve-prompt`). If it is empty, ask for it.
-2. **Gather context yourself before asking.** Look at the workspace to fill gaps: files or modules mentioned, the stack (`pyproject.toml`, `requirements*.txt`, Databricks bundle/config files, notebooks), existing tests, conventions in `.github/copilot-instructions.md`. Use exact file paths and names you actually found.
+2. **Gather context yourself before asking.** First run:
+
+   ```bash
+   python .github/skills/improve-prompt/scripts/workspace_context.py .
+   ```
+
+   It prints a ~20-line project summary (Python version, dependencies, tooling, layout, notebooks, tests, PySpark use, installed cuypilot pieces). Then look only at what the request mentions to fill remaining gaps: files or modules mentioned, the stack (`pyproject.toml`, `requirements*.txt`, Databricks bundle/config files, notebooks), existing tests, conventions in `.github/copilot-instructions.md`. Use exact file paths and names you actually found.
 3. **Check what the prompt is missing:**
    - **Goal:** what outcome is wanted and why (bug fix, refactor, new feature, optimization, documentation, analysis).
    - **Context:** relevant files, functions, tables, data sizes, Databricks runtime/cluster or Spark version if performance matters.

@@ -14,6 +14,7 @@ Goal: same behavior, less and clearer code. Deleting beats adding.
    - If tests exist, run them first and note the baseline.
    - If not, write characterization tests for the public behavior you will touch (happy path + one edge case). For PySpark, use small local DataFrames and compare with `assertDataFrameEqual` (`pyspark.testing`).
    - If tests are impossible right now, say so explicitly and keep each step tiny.
+   - To find where complexity concentrates, run `python .github/skills/design-review/scripts/code_metrics.py <path>` if the `design-review` skill is installed.
 3. **Plan the steps** and show the plan, ordered by value/risk. Typical moves, in order of preference:
    1. Delete: dead code, unused parameters/imports, commented-out code, speculative abstractions, flags nobody sets.
    2. Inline: wrappers that only forward calls, single-use helpers that hide nothing, base classes with one child.

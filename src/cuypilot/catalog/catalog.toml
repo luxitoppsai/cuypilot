@@ -14,17 +14,17 @@ description = "Diseñar código nuevo: función vs clase, SOLID, patrones de dis
 
 [items.python-refactor]
 type = "skill"
-version = "1.0.0"
+version = "1.1.0"
 description = "Refactorizar código existente preservando el comportamiento: simplificar, borrar antes que agregar."
 
 [items.design-review]
 type = "skill"
-version = "1.0.0"
+version = "1.1.0"
 description = "Revisar código sin modificarlo: sobreingeniería, SOLID, acoplamiento; hallazgos priorizados."
 
 [items.sphinx-docstrings]
 type = "skill"
-version = "1.0.0"
+version = "1.1.0"
 description = "Escribir o corregir docstrings Sphinx (reST) en módulos, clases y funciones públicas."
 
 [items.docs-writer]
@@ -35,5 +35,5 @@ requires = ["sphinx-docstrings"]
 
 [items.improve-prompt]
 type = "skill"
-version = "1.0.0"
+version = "1.1.0"
 description = "Convierte un pedido vago en un prompt claro y completo antes de trabajar (solo con /improve-prompt)."

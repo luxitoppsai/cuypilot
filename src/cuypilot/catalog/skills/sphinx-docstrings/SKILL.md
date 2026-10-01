@@ -41,6 +41,14 @@ Rules:
 
 ## Workflow
 
-1. Read the code and its callers to understand real behavior (do not guess from names).
-2. Add or fix docstrings; keep existing correct content.
-3. If something is unclear (e.g. a parameter's meaning), write the best accurate description you can and list the uncertainty for the user.
+1. **Find what needs work first — do not read every file.** Run the audit script with the project's Python on the target path:
+
+   ```bash
+   python .github/skills/sphinx-docstrings/scripts/docstring_audit.py <path>
+   ```
+
+   It lists public elements with a missing docstring, missing/unknown `:param:` fields, or a missing `:returns:`/`:yields:` (one line each, `path:line kind name - problems`). Work only on the reported elements.
+2. For each reported element, read its code and callers to understand real behavior (do not guess from names).
+3. Add or fix docstrings; keep existing correct content.
+4. Run the script again to confirm the reported elements are resolved.
+5. If something is unclear (e.g. a parameter's meaning), write the best accurate description you can and list the uncertainty for the user.

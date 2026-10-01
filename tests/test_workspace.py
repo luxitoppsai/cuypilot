@@ -24,7 +24,7 @@ def test_add_installs_item_lock_and_base_block(tmp_path):
     assert report.done == ["sphinx-docstrings"]
     assert (tmp_path / SKILL).read_bytes() == (CATALOG_DIR / "skills/sphinx-docstrings/SKILL.md").read_bytes()
     lock = json.loads((tmp_path / LOCK_PATH).read_text())
-    assert lock["items"]["sphinx-docstrings"]["version"] == "1.0.0"
+    assert lock["items"]["sphinx-docstrings"]["version"] == load_catalog()["sphinx-docstrings"].version
     assert START in (tmp_path / INSTRUCTIONS_PATH).read_text()
 
 
