@@ -126,11 +126,13 @@ version = "0.9.73"
 description = "Grafo de conocimiento del repo para Copilot (/graphify); el código se procesa localmente con tree-sitter."
 license = "Apache-2.0"
 package = "graphifyy==0.9.73"
-configure = [["graphify", "vscode", "install"]]
+# Conecta graphify a VS Code y construye el índice del código (local, sin LLM).
+configure = [["graphify", "vscode", "install"], ["graphify", "update", "."]]
 uninstall = [["graphify", "vscode", "uninstall"]]
 check = ["graphify", "--version"]
 gitignore = ["graphify-out/", "graph.json"]
 instructions = """
+- To build or refresh the code graph, run `graphify update .` (code only, local, no LLM). Run it again after large code changes.
 - When running `graphify extract` from the terminal, always pass `--code-only` unless the team has approved a `--backend`.
   Without it, graphify sends docs/PDFs/images to whichever external LLM provider matches an API key found in the environment."""
 

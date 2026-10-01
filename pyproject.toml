@@ -1,6 +1,6 @@
 [project]
 name = "cuypilot"
-version = "0.3.1"
+version = "0.3.2"
 description = "Catálogo versionado de skills, agents e instructions para GitHub Copilot (VS Code), instalable vía CLI."
 readme = "README.md"
 requires-python = ">=3.11"

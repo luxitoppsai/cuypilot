@@ -114,19 +114,31 @@ def run_wizard(
         print("  No elegiste ninguna pieza; no se instaló nada.")
         return 0
     print(f"\n  Se instalará: {', '.join(paint(n, '1') for n in chosen)}")
+    _, commands = ws.plan_add(chosen)
+    if commands:
+        print("  Y se ejecutarán estos comandos:")
+        for cmd in commands:
+            print(f"    $ {' '.join(cmd)}")
     if not assume_yes and not _yes(ask, "¿Instalar?", True):
         print("  Cancelado; no se instaló nada.")
         return 0
 
+    ws.confirm = lambda commands: True  # ya se confirmó arriba, con los comandos a la vista
     report = ws.add(chosen)
     for name in report.done:
         print(f"  {paint('✓', '32')} {name}")
     for name, reason in report.skipped.items():
         print(f"  - {name}: {reason}")
+    for note in report.notes:
+        print(f"  nota: {note}")
     print(
+        "\n  Cómo se usa cada tipo en Copilot Chat (modo Agent):\n"
+        "    - instruction: se aplica SOLA al editar archivos; no aparece con /. Búscala en References.\n"
+        "    - skill: escribe / y su nombre (ej. /design-review), o Copilot la elige según tu pedido.\n"
+        "    - agent: elígelo en el selector de agentes del chat.\n"
         "\n  Siguientes pasos:\n"
         '    1. git add .github .gitignore && git commit -m "chore: copilot customizations via cuypilot"\n'
-        "    2. En VS Code: Developer: Reload Window, abre Copilot Chat y escribe / para ver las skills.\n"
+        "    2. En VS Code: Developer: Reload Window y abre Copilot Chat.\n"
         "    3. Guía completa: docs/guia-usuario.md del repo de cuypilot.\n"
     )
     return 0

@@ -18,7 +18,7 @@ cuypilot se instala como **dependencia de desarrollo**, en el entorno virtual de
 ```bash
 python -m venv .venv                 # si el proyecto aún no tiene uno
 source .venv/bin/activate            # Windows: .venv\Scripts\activate
-pip install <ruta>/cuypilot-0.3.1-py3-none-any.whl   # y agrega esa línea a tu requirements-dev.txt
+pip install <ruta>/cuypilot-0.3.2-py3-none-any.whl   # y agrega esa línea a tu requirements-dev.txt
 cuypilot --version
 ```
 

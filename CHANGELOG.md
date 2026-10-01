@@ -2,6 +2,14 @@
 
 Formato: [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado: semver (ver `CONTRIBUTING.md`).
 
+## [0.3.2] - 2026-10-01
+
+### Cambiado
+- `graphify` construye el índice al instalarse (`graphify update .`: local, sin LLM); la regla del bloque gestionado explica cómo refrescarlo.
+- El wizard explica cómo se usa cada tipo de pieza: las instructions se aplican solas y **no aparecen con `/`**; las skills sí; los agents van en el selector.
+- La guía aclara cómo verificar que una instruction se usó (References).
+- El wizard muestra los comandos de las herramientas en el resumen y pide **una sola** confirmación (antes preguntaba dos veces).
+
 ## [0.3.1] - 2026-10-01
 
 Funciona **solo con pip**: sin uv ni pipx (enmienda a RFC-002).

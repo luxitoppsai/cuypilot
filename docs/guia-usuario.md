@@ -41,7 +41,7 @@ vas a usar. El wheel está disponible en `<ruta>`.
 ```bash
 python -m venv .venv                     # si el proyecto aún no tiene entorno virtual
 source .venv/bin/activate                # Windows: .venv\Scripts\activate
-pip install <ruta>/cuypilot-0.3.1-py3-none-any.whl
+pip install <ruta>/cuypilot-0.3.2-py3-none-any.whl
 ```
 
 Agrega esa misma línea (la ruta del wheel) a tu `requirements-dev.txt`, para que el resto del equipo lo
@@ -119,7 +119,7 @@ distinta:
 
 | Tipo | Cómo se usa |
 |---|---|
-| **instruction** | Se aplica **sola**, sin que la invoques (por ejemplo, al editar archivos `.py`) |
+| **instruction** | Se aplica **sola** al editar archivos (por ejemplo, `.py`). **No aparece al escribir `/`**: para comprobar que se usó, despliega **References** debajo de la respuesta |
 | **skill** | Copilot la usa sola cuando tu pedido coincide, o la invocas con `/nombre` |
 | **agent** | La eliges en el **selector de agentes** de Copilot Chat |
 | **tool** | Un programa externo que cuypilot instala y conecta a VS Code |
@@ -242,10 +242,14 @@ Qué ocurre:
    entorno virtual del proyecto** (el mismo donde instalaste cuypilot).
 2. Se ejecuta `graphify vscode install`. Esto instala la skill `/graphify` **en tu usuario**
    (`~/.copilot/skills/graphify`) y agrega una sección `## graphify` a `.github/copilot-instructions.md`.
-3. Se agregan `graphify-out/` y `graph.json` al `.gitignore`.
-4. Se agrega al bloque de cuypilot la regla de uso seguro (ver abajo).
+3. Se ejecuta `graphify update .`, que **construye el índice** del código en `graphify-out/` (local, sin
+   LLM; tarda segundos o pocos minutos según el tamaño del repo).
+4. Se agregan `graphify-out/` y `graph.json` al `.gitignore`.
+5. Se agrega al bloque de cuypilot la regla de uso seguro (ver abajo).
 
-Para construir el grafo, escribe `/graphify` en Copilot Chat.
+Desde ese momento, Copilot consulta el grafo (`graphify query "..."`) en vez de leer archivo por archivo.
+Puedes abrir `graphify-out/graph.html` en el navegador para verlo. **Cuando el código cambie bastante,
+reconstrúyelo** con `graphify update .`.
 
 **Uso seguro:** el código se procesa **localmente** (tree-sitter). Pero si ejecutas `graphify extract`
 desde la terminal sin opciones, graphify envía la documentación, los PDF y las imágenes al proveedor de

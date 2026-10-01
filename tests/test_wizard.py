@@ -60,3 +60,18 @@ def test_no_args_on_fresh_repo_opens_wizard(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr("builtins.input", lambda prompt="": next(replies))
     assert main([]) == 0
     assert "¿Cuál es tu rol?" in capsys.readouterr().out
+
+
+def test_tools_are_confirmed_once_with_commands_shown(tmp_path, capsys):
+    calls = []
+    ws = Workspace(
+        tmp_path, load_catalog(), "0.0.0-test", run=lambda cmd, cwd: (calls.append(cmd), (0, ""))[1]
+    )
+    tools = [n for n, i in ws.catalog.items() if type(i).__name__ == "Tool"]
+    # rol 1, sí a la primera herramienta, no al resto, y una sola confirmación final.
+    replies = iter(["1", "s", *["n"] * (len(tools) - 1), ""])
+    assert run_wizard(ws, load_roles(), "0.0.0-test", ask=lambda prompt: next(replies)) == 0
+
+    out = capsys.readouterr().out
+    assert "Y se ejecutarán estos comandos:" in out and "¿Continuar?" not in out
+    assert tools[0] in ws.lock and calls
