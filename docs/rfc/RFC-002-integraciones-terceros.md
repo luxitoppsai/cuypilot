@@ -217,4 +217,18 @@ Ninguna bloqueante. Decisiones cerradas el 2026-09-30:
 1. Solo graphify (sin codegraph); sin `ponytail-review`; la CLI ejecuta los instaladores con confirmación.
 2. Skills de Databricks descartadas (§4.4).
 3. Los 3 scripts iniciales aprobados.
-4. Se verifican durante la implementación: licencia de `skill-creator`, la lista de skills de ponytail, menciones a herramientas exclusivas de Claude en superpowers, la calidad de `spark-performance` y los comandos actuales de graphify. Si alguna no cumple, queda fuera y se anota aquí.
+4. Verificado durante la implementación (2026-09-30):
+   - **`skill-creator` queda fuera:** sus scripts dependen de la CLI de Claude (no funcionan desde
+     Copilot) y no cumplen las reglas de scripts (§4.1).
+   - **ponytail:** entran `ponytail`, `ponytail-audit` y `ponytail-debt`. También quedan fuera
+     `ponytail-help` (ayuda para instalarlo en Claude Code) y `ponytail-gain` (marcador de su benchmark).
+   - **superpowers:** sin menciones a herramientas exclusivas de Claude. En `systematic-debugging` se
+     excluyen `find-polluter.sh` y el ejemplo `.ts` (son de JS), con las referencias ajustadas (`adapted`).
+   - **`spark-performance`:** entra adaptado: sin marcas de citas rotas y con el reporte escrito solo a pedido.
+   - **graphify:** versión aprobada **0.9.73** (la investigación decía 0.9.2). `graphify vscode install`
+     instala la skill a nivel de usuario (`~/.copilot/skills`) y agrega una sección `## graphify` a
+     `copilot-instructions.md`; su uninstall la quita también a nivel de usuario. Esto se documenta en la
+     guía de usuario.
+   - **Bug de convivencia encontrado en la prueba real:** el uninstall de graphify se llevaba el marcador
+     de inicio del bloque de cuypilot. Se corrigió poniendo el marcador en la línea del encabezado H2
+     (ver CHANGELOG 0.2.0).

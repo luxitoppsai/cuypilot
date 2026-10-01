@@ -26,6 +26,43 @@
 - **Skills que no deben activarse solas** (por ejemplo, de uso explícito): `disable-model-invocation: true`.
 - Usa solo el frontmatter estándar de VS Code; versión, dueño y dependencias van en `catalog.toml`.
 
+## Scripts dentro de una skill
+
+Si una parte del trabajo es determinista (contar, listar, medir), conviértela en un script en
+`skills/<name>/scripts/` para que el LLM no gaste tokens haciéndolo. Se instala junto con la skill. Reglas
+(las valida `tests/scripts/test_script_rules.py`):
+
+- Solo librería estándar, compatible con Python 3.11.
+- **Solo lectura:** reporta, no modifica archivos. Las ediciones las hace el LLM.
+- Sin red.
+- Salida compacta (una línea por hallazgo y un resumen al final), con `--json` opcional.
+- Tests en `tests/scripts/test_<script>.py`.
+- El `SKILL.md` indica cuándo ejecutarlo (`python .github/skills/<name>/scripts/<script>.py <path>`) y le pide al LLM leer solo lo reportado.
+
+## Piezas de terceros
+
+1. Verifica la licencia: solo `MIT`, `Apache-2.0`, `BSD-2-Clause` y `BSD-3-Clause`.
+2. Copia la pieza desde un **commit concreto** del repo original. En skills, incluye el `LICENSE` en la
+   carpeta. En agents e instructions (archivo único), agrega al final un comentario HTML con la fuente y el
+   texto de la licencia.
+3. En `catalog.toml`, agrega el bloque `upstream` (`repo`, `ref` con el sha completo, `path`, `license`, `adapted`).
+4. Adapta **lo mínimo** (por ejemplo, referencias a herramientas exclusivas de Claude Code o a archivos que
+   no se copian). Si adaptas algo, `adapted = true`, explícalo en el PR y deja un comentario
+   `<!-- cuypilot: adapted - ... -->` donde cambiaste.
+5. **Actualizar desde el original:** nuevo `ref`, diff revisado en el PR y checklist de seguridad completo.
+
+## Herramientas (`type = "tool"`)
+
+Para programas externos que tienen su propio instalador (por ejemplo `graphify`). En `catalog.toml`:
+
+- `install`, `configure`, `uninstall` y `check` son **listas de argumentos**: nunca un shell, `|` ni `&&`.
+- `install` fija la **versión aprobada** (igual a `version`).
+- `gitignore`: lo que la herramienta genera en el repo.
+- `instructions`: regla de uso seguro que se agrega al bloque gestionado mientras esté instalada.
+
+Pruébala de punta a punta en un entorno aislado (por ejemplo, un venv con `HOME` temporal), incluyendo
+`remove` y la convivencia con el bloque gestionado de `copilot-instructions.md`.
+
 ## Versionado
 
 - **Pieza:** sube su `version` en `catalog.toml` cada vez que cambie su contenido (MAJOR si cambia su propósito o se renombra; MINOR si agrega comportamiento; PATCH si son correcciones).
