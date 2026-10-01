@@ -159,3 +159,8 @@ description = "Documentación funcional en español de pipelines/modelos (planti
 type = "skill"
 version = "1.0.0"
 description = "Revisión de código ML sin editar: leakage, splits, semillas, métricas, MLflow (sklearn, XGBoost, LightGBM, Spark ML)."
+
+[items.sphinx-setup]
+type = "skill"
+version = "1.0.0"
+description = "Crea o repara docs/ con Sphinx: sección técnica (autodoc/autosummary) y funcional (MyST), tema furo, build sin warnings."

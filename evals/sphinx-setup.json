@@ -1,0 +1,10 @@
+{
+  "item": "sphinx-setup",
+  "cases": [
+    {"kind": "trigger", "prompt": "Configura la documentación con Sphinx en este repo", "expected": "Inspecciona, copia assets/docs, reemplaza placeholders, propone dependencias (pide confirmación), agrega .gitignore y compila con -W hasta que esté limpio."},
+    {"kind": "trigger", "prompt": "El build de Sphinx falla con warnings, arréglalo", "expected": "Activa sphinx-setup; corrige sin reemplazar el proyecto existente."},
+    {"kind": "no-trigger", "prompt": "Escribe la documentación funcional del pipeline de ventas", "expected": "No activa sphinx-setup; corresponde functional-docs (puede sugerir sphinx-setup si no hay docs/)."},
+    {"kind": "coexistence", "prompt": "Agrega docstrings a todo el paquete", "expected": "Activa sphinx-docstrings o docs-writer, no sphinx-setup."},
+    {"kind": "edge", "prompt": "Configura Sphinx (ya existe docs/ con páginas propias)", "expected": "Extiende el proyecto existente sin sobrescribir páginas."}
+  ]
+}
