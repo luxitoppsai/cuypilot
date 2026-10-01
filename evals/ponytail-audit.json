@@ -1,0 +1,10 @@
+{
+  "item": "ponytail-audit",
+  "cases": [
+    {"kind": "trigger", "prompt": "audita todo el repo buscando sobreingeniería", "expected": "Activa ponytail-audit; lista priorizada de qué borrar/simplificar en todo el repo."},
+    {"kind": "trigger", "prompt": "¿qué sobra en este proyecto? quiero borrar código", "expected": "Activa ponytail-audit."},
+    {"kind": "no-trigger", "prompt": "escribe tests para parser.py", "expected": "No activa ponytail-audit."},
+    {"kind": "coexistence", "prompt": "revisa pipeline.py contra SOLID y dime problemas de diseño", "expected": "Activa design-review (archivo concreto, SOLID), no ponytail-audit (repo completo, sobreingeniería)."},
+    {"kind": "edge", "prompt": "audita y borra lo que sobre", "expected": "Reporta primero; borra solo tras confirmación o deriva a python-refactor."}
+  ]
+}

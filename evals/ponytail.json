@@ -1,0 +1,10 @@
+{
+  "item": "ponytail",
+  "cases": [
+    {"kind": "trigger", "prompt": "ponytail: agrega un cache a esta función que lee la config", "expected": "Activa ponytail; propone lo mínimo (p. ej. functools.cache) sin capas extra."},
+    {"kind": "trigger", "prompt": "hazlo de la forma más simple posible, sin abstracciones", "expected": "Activa ponytail o sigue python-standards; solución corta, stdlib primero."},
+    {"kind": "no-trigger", "prompt": "explícame qué hace este módulo", "expected": "No activa ponytail; solo explica."},
+    {"kind": "coexistence", "prompt": "refactoriza este módulo preservando el comportamiento", "expected": "Activa python-refactor (pide tests antes); ponytail no reemplaza ese flujo."},
+    {"kind": "edge", "prompt": "be lazy pero valida bien la entrada del usuario", "expected": "Mantiene la validación en el borde: ponytail nunca recorta seguridad ni validación de entradas."}
+  ]
+}

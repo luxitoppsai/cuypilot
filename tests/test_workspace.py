@@ -140,3 +140,34 @@ def test_cli_end_to_end(tmp_path, monkeypatch, capsys):
     assert main(["list", "--type", "agent"]) == 0
     assert "* docs-writer" in capsys.readouterr().out
     assert main(["remove", "nope"]) == 1
+
+
+def _strip_h2_section(text: str, heading: str) -> str:
+    """Reproduce cómo graphify quita su sección: desde ``heading`` hasta el siguiente ``## `` o EOF."""
+    lines = text.split("\n")
+    start = lines.index(heading)
+    end = next((j for j in range(start + 1, len(lines)) if lines[j].startswith("## ")), len(lines))
+    return "\n".join(lines[:start] + lines[end:])
+
+
+def test_block_survives_other_tools_h2_sections(tmp_path):
+    path = tmp_path / INSTRUCTIONS_PATH
+    path.parent.mkdir(parents=True)
+    path.write_text("## graphify\n\nUse graphify query.\n")
+
+    ws(tmp_path).add(["python-design"])  # el bloque queda DESPUÉS de la sección ajena
+    path.write_text(_strip_h2_section(path.read_text(), "## graphify"))
+    assert START in path.read_text()
+
+    ws(tmp_path).remove(["python-design"])
+    assert not path.exists() or START not in path.read_text()
+
+
+def test_v010_block_format_is_migrated(tmp_path):
+    path = tmp_path / INSTRUCTIONS_PATH
+    path.parent.mkdir(parents=True)
+    path.write_text("# Mine\n\n<!-- cuypilot:start -->\n## Team conventions\nold\n<!-- cuypilot:end -->\n")
+    ws(tmp_path).add(["python-design"])
+    text = path.read_text()
+    assert text.count(START) == 1 and "old" not in text
+    assert text.startswith("# Mine\n\n## Team conventions (managed by cuypilot")

@@ -37,3 +37,98 @@ requires = ["sphinx-docstrings"]
 type = "skill"
 version = "1.1.0"
 description = "Convierte un pedido vago en un prompt claro y completo antes de trabajar (solo con /improve-prompt)."
+
+# --- Terceros copiados al catálogo (RFC-002 §4.2). Al actualizar desde el original: nuevo `ref` + PR. ---
+
+[items.ponytail]
+type = "skill"
+version = "1.0.0"
+description = "Modo 'senior dev flojo' (ponytail): la solución más simple y corta que funciona; YAGNI, stdlib primero."
+[items.ponytail.upstream]
+repo = "DietrichGebert/ponytail"
+ref = "e3ba2aa6f1e6f0bc4d69eb09c9f0d0a93af56156"
+path = "skills/ponytail"
+license = "MIT"
+adapted = false
+
+[items.ponytail-audit]
+type = "skill"
+version = "1.0.0"
+description = "Auditoría de todo el repo buscando sobreingeniería: qué borrar, simplificar o reemplazar por stdlib (ponytail)."
+[items.ponytail-audit.upstream]
+repo = "DietrichGebert/ponytail"
+ref = "e3ba2aa6f1e6f0bc4d69eb09c9f0d0a93af56156"
+path = "skills/ponytail-audit"
+license = "MIT"
+adapted = false
+
+[items.ponytail-debt]
+type = "skill"
+version = "1.0.0"
+description = "Junta los comentarios `ponytail:` del código en un registro de deuda técnica deliberada (ponytail)."
+[items.ponytail-debt.upstream]
+repo = "DietrichGebert/ponytail"
+ref = "e3ba2aa6f1e6f0bc4d69eb09c9f0d0a93af56156"
+path = "skills/ponytail-debt"
+license = "MIT"
+adapted = false
+
+[items.systematic-debugging]
+type = "skill"
+version = "1.0.0"
+description = "Depuración sistemática: causa raíz antes de arreglar, trazado hacia atrás, defensa en profundidad (superpowers)."
+[items.systematic-debugging.upstream]
+repo = "obra/superpowers"
+ref = "8ca22dba9a94f28898bbce59f2537ff4d87c747d"
+path = "skills/systematic-debugging"
+license = "MIT"
+adapted = true   # sin find-polluter.sh ni el ejemplo .ts (son de JS); referencias ajustadas
+
+[items.test-driven-development]
+type = "skill"
+version = "1.0.0"
+description = "TDD: test que falla primero, código mínimo para pasarlo, luego refactor (superpowers)."
+[items.test-driven-development.upstream]
+repo = "obra/superpowers"
+ref = "8ca22dba9a94f28898bbce59f2537ff4d87c747d"
+path = "skills/test-driven-development"
+license = "MIT"
+adapted = false
+
+[items.verification-before-completion]
+type = "skill"
+version = "1.0.0"
+description = "No declarar algo terminado sin ejecutar la verificación y mostrar la evidencia (superpowers)."
+[items.verification-before-completion.upstream]
+repo = "obra/superpowers"
+ref = "8ca22dba9a94f28898bbce59f2537ff4d87c747d"
+path = "skills/verification-before-completion"
+license = "MIT"
+adapted = false
+
+[items.spark-performance]
+type = "agent"
+version = "1.0.0"
+description = "Agente que diagnostica cuellos de botella de PySpark y propone reescrituras Spark-native (awesome-copilot)."
+[items.spark-performance.upstream]
+repo = "github/awesome-copilot"
+ref = "d6131471b85fbb4799e64175ebc42c9309ecc28a"
+path = "agents/spark-performance.agent.md"
+license = "MIT"
+adapted = true   # sin artefactos de citas; el reporte escrito solo si el usuario lo pide
+
+# --- Herramientas externas (RFC-002 §4.3). Los comandos se ejecutan sin shell y con confirmación. ---
+
+[items.graphify]
+type = "tool"
+version = "0.9.73"
+description = "Grafo de conocimiento del repo para Copilot (/graphify); el código se procesa localmente con tree-sitter."
+license = "Apache-2.0"
+install = [["uv", "tool", "install", "graphifyy==0.9.73"]]
+configure = [["graphify", "vscode", "install"]]
+uninstall = [["graphify", "vscode", "uninstall"]]
+check = ["graphify", "--version"]
+gitignore = ["graphify-out/", "graph.json"]
+instructions = """
+- When running `graphify extract` from the terminal, always pass `--code-only` unless the team has approved a `--backend`.
+  Without it, graphify sends docs/PDFs/images to whichever external LLM provider matches an API key found in the environment."""

@@ -1,0 +1,9 @@
+{
+  "item": "spark-performance",
+  "cases": [
+    {"kind": "trigger", "prompt": "@PySpark Expert Agent este job tarda 2 horas, revísalo", "expected": "Sigue el formato de 4 secciones (veredicto, code smells, recomendaciones, paralelismo); pide explain()/Spark UI si falta evidencia; no inventa métricas."},
+    {"kind": "trigger", "prompt": "@PySpark Expert Agent ¿uso pandas_udf o applyInPandas aquí?", "expected": "Primero evalúa si hay alternativa Spark-native; luego recomienda la opción vectorizada adecuada."},
+    {"kind": "no-trigger", "prompt": "@PySpark Expert Agent escribe el README", "expected": "Declara que está fuera de su alcance."},
+    {"kind": "edge", "prompt": "@PySpark Expert Agent revisa este join (sin pedir reporte)", "expected": "No crea archivos en docs/code-review; solo responde en el chat."}
+  ]
+}

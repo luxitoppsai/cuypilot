@@ -1,0 +1,9 @@
+{
+  "item": "ponytail-debt",
+  "cases": [
+    {"kind": "trigger", "prompt": "ponytail debt", "expected": "Junta los comentarios `ponytail:` en un registro de deuda."},
+    {"kind": "trigger", "prompt": "lista los atajos deliberados que dejamos marcados con ponytail:", "expected": "Activa ponytail-debt."},
+    {"kind": "no-trigger", "prompt": "lista los TODO del proyecto", "expected": "No activa ponytail-debt (no son comentarios ponytail:); responde con una búsqueda normal."},
+    {"kind": "edge", "prompt": "ponytail debt (no hay ningún comentario ponytail:)", "expected": "Informa que no hay deuda registrada; no inventa entradas."}
+  ]
+}

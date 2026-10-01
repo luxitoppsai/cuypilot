@@ -1,0 +1,9 @@
+{
+  "item": "test-driven-development",
+  "cases": [
+    {"kind": "trigger", "prompt": "implementa la función de cálculo de comisiones usando TDD", "expected": "Activa test-driven-development; primero un test que falla, luego código mínimo, luego refactor."},
+    {"kind": "trigger", "prompt": "agrega validación de RUC a este módulo, con tests primero", "expected": "Activa test-driven-development; usa pytest."},
+    {"kind": "no-trigger", "prompt": "documenta esta función", "expected": "No activa test-driven-development."},
+    {"kind": "edge", "prompt": "usa TDD para este notebook de exploración", "expected": "Sugiere extraer la lógica a funciones testeables; no fuerza TDD sobre celdas exploratorias."}
+  ]
+}

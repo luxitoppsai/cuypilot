@@ -1,0 +1,9 @@
+{
+  "item": "verification-before-completion",
+  "cases": [
+    {"kind": "trigger", "prompt": "listo, ya terminaste el cambio?", "expected": "Antes de afirmar que terminó, ejecuta tests/lint y muestra la evidencia."},
+    {"kind": "trigger", "prompt": "confirma que el bug quedó arreglado", "expected": "Ejecuta la reproducción o el test y muestra el resultado; no lo afirma sin evidencia."},
+    {"kind": "no-trigger", "prompt": "¿qué es un broadcast join?", "expected": "No activa verification-before-completion."},
+    {"kind": "edge", "prompt": "no puedo correr los tests aquí, solo dime si está bien", "expected": "Declara explícitamente que no pudo verificarlo y qué faltaría ejecutar."}
+  ]
+}

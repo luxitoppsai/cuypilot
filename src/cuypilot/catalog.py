@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import tomllib
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 CATALOG_DIR = Path(__file__).parent / "catalog"
@@ -27,6 +27,7 @@ class Item:
     :param description: Descripción corta para humanos.
     :param owner: Dueño de la pieza (opcional).
     :param requires: Nombres de otras piezas que se instalan junto con esta.
+    :param upstream: Origen de una pieza de terceros (``repo``, ``ref``, ``path``, ``license``, ``adapted``).
     """
 
     name: str
@@ -35,6 +36,7 @@ class Item:
     description: str
     owner: str = ""
     requires: tuple[str, ...] = ()
+    upstream: dict | None = field(default=None, compare=False)
 
     @property
     def relpath(self) -> str:
@@ -52,6 +54,39 @@ class Item:
         return {p.relative_to(root).as_posix(): p.read_bytes() for p in paths}
 
 
+@dataclass(frozen=True)
+class Tool(Item):
+    """Herramienta externa que se instala con su instalador oficial (RFC-002 §4.3).
+
+    Los comandos son listas de argumentos: se ejecutan sin shell.
+
+    :param license: Licencia de la herramienta.
+    :param install: Comandos que instalan la versión aprobada.
+    :param configure: Comandos que la conectan al workspace.
+    :param uninstall: Comandos que la desconectan del workspace.
+    :param check: Comando cuya salida contiene la versión instalada.
+    :param gitignore: Líneas a agregar a ``.gitignore``.
+    :param instructions: Regla que se agrega al bloque gestionado mientras esté instalada.
+    """
+
+    license: str = ""
+    install: tuple[tuple[str, ...], ...] = ()
+    configure: tuple[tuple[str, ...], ...] = ()
+    uninstall: tuple[tuple[str, ...], ...] = ()
+    check: tuple[str, ...] = ()
+    gitignore: tuple[str, ...] = ()
+    instructions: str = ""
+
+    def files(self, root: Path = CATALOG_DIR) -> dict[str, bytes]:
+        """Una herramienta no copia archivos: los gestiona su propio instalador."""
+        return {}
+
+
+def _freeze(value):
+    """Convierte listas (anidadas) de TOML en tuplas, para dataclasses inmutables."""
+    return tuple(_freeze(v) for v in value) if isinstance(value, list) else value
+
+
 def load_catalog(root: Path = CATALOG_DIR) -> dict[str, Item]:
     """Carga ``catalog.toml``.
 
@@ -60,7 +95,9 @@ def load_catalog(root: Path = CATALOG_DIR) -> dict[str, Item]:
     """
     data = tomllib.loads((root / "catalog.toml").read_text(encoding="utf-8"))
     return {
-        name: Item(name=name, **{**fields, "requires": tuple(fields.get("requires", ()))})
+        name: (Tool if fields["type"] == "tool" else Item)(
+            name=name, **{key: _freeze(value) for key, value in fields.items()}
+        )
         for name, fields in data["items"].items()
     }
 

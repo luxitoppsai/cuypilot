@@ -8,7 +8,15 @@ from importlib.metadata import version as pkg_version
 from pathlib import Path
 
 from cuypilot.catalog import PATHS, load_catalog
-from cuypilot.workspace import CuypilotError, Report, Workspace
+from cuypilot.workspace import Command, CuypilotError, Report, Workspace
+
+
+def _ask(commands: list[Command]) -> bool:
+    """Muestra los comandos que se van a ejecutar y pide confirmación en la terminal."""
+    print("Se ejecutarán estos comandos:")
+    for cmd in commands:
+        print(f"  $ {' '.join(cmd)}")
+    return input("¿Continuar? [s/N] ").strip().lower() in ("s", "si", "sí", "y", "yes")
 
 
 def _print_report(report: Report, verb: str) -> None:
@@ -16,6 +24,8 @@ def _print_report(report: Report, verb: str) -> None:
         print(f"  {verb}: {name}")
     for name, reason in report.skipped.items():
         print(f"  omitida: {name} — {reason}")
+    for note in report.notes:
+        print(f"  nota: {note}")
 
 
 def _cmd_list(ws: Workspace, args: argparse.Namespace) -> None:
@@ -28,6 +38,12 @@ def _cmd_list(ws: Workspace, args: argparse.Namespace) -> None:
 
 
 def _cmd_add(ws: Workspace, args: argparse.Namespace) -> None:
+    if args.dry_run:
+        items, commands = ws.plan_add(args.names)
+        print("Se instalarían: " + (", ".join(i.name for i in items) or "nada (ya instaladas)"))
+        for cmd in commands:
+            print(f"  $ {' '.join(cmd)}")
+        return
     _print_report(ws.add(args.names, force=args.force), "instalada")
 
 
@@ -59,16 +75,19 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     p = sub.add_parser("list", help="Muestra el catálogo disponible.")
-    p.add_argument("--type", choices=sorted(PATHS))
+    p.add_argument("--type", choices=[*sorted(PATHS), "tool"])
     p.set_defaults(func=_cmd_list)
 
     p = sub.add_parser("add", help="Instala piezas (y sus dependencias).")
     p.add_argument("names", nargs="+")
     p.add_argument("--force", action="store_true", help="Sobrescribe archivos que no son de cuypilot.")
+    p.add_argument("--dry-run", action="store_true", help="Muestra qué haría, sin cambiar nada.")
+    p.add_argument("--yes", "-y", action="store_true", help="No pide confirmación para ejecutar comandos.")
     p.set_defaults(func=_cmd_add)
 
     p = sub.add_parser("remove", help="Quita piezas instaladas.")
     p.add_argument("names", nargs="+")
+    p.add_argument("--yes", "-y", action="store_true", help="No pide confirmación para ejecutar comandos.")
     p.set_defaults(func=_cmd_remove)
 
     p = sub.add_parser("status", help="Estado de las piezas instaladas.")
@@ -77,6 +96,7 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("update", help="Actualiza piezas instaladas a esta versión de cuypilot.")
     p.add_argument("names", nargs="*")
     p.add_argument("--force", action="store_true", help="Pisa también piezas modificadas localmente.")
+    p.add_argument("--yes", "-y", action="store_true", help="No pide confirmación para ejecutar comandos.")
     p.set_defaults(func=_cmd_update)
     return parser
 
@@ -91,7 +111,8 @@ def main(argv: list[str] | None = None) -> int:
     root = Path.cwd()
     if not (root / ".git").exists() and args.command in ("add", "update", "remove"):
         print("Aviso: este directorio no es la raíz de un repo git.", file=sys.stderr)
-    ws = Workspace(root, load_catalog(), pkg_version("cuypilot"))
+    confirm = (lambda commands: True) if getattr(args, "yes", False) else _ask
+    ws = Workspace(root, load_catalog(), pkg_version("cuypilot"), confirm=confirm)
     try:
         args.func(ws, args)
     except CuypilotError as exc:

@@ -1,0 +1,10 @@
+{
+  "item": "systematic-debugging",
+  "cases": [
+    {"kind": "trigger", "prompt": "este test falla de forma intermitente, ayúdame a encontrar por qué", "expected": "Activa systematic-debugging; busca causa raíz antes de proponer fix; no agrega sleeps."},
+    {"kind": "trigger", "prompt": "el job de PySpark devuelve filas duplicadas después del join, no sé por qué", "expected": "Activa systematic-debugging; reproduce, aísla y traza hacia atrás (claves duplicadas, tipo de join)."},
+    {"kind": "no-trigger", "prompt": "agrega una columna de fecha al DataFrame", "expected": "No activa systematic-debugging."},
+    {"kind": "coexistence", "prompt": "el código es feo, mejóralo", "expected": "Activa python-refactor, no systematic-debugging (no hay bug)."},
+    {"kind": "edge", "prompt": "arréglalo rápido, no tengo tiempo de investigar", "expected": "Aun así identifica la causa antes del fix (puede ser breve); no aplica parches a ciegas."}
+  ]
+}

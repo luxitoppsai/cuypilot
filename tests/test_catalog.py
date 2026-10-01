@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from cuypilot.catalog import CATALOG_DIR, PATHS, load_catalog
+from cuypilot.catalog import CATALOG_DIR, PATHS, Tool, load_catalog
 
 ROOT = Path(__file__).parents[1]
 CATALOG = load_catalog()
@@ -16,6 +16,11 @@ SECRET_RE = re.compile(
     r"(?i)(api[_-]?key|secret|token|password)\s*[:=]\s*['\"][^'\"]{8,}|ghp_[A-Za-z0-9]{20,}|dapi[0-9a-f]{20,}"
 )
 REVIEW_RE = re.compile(r"https?://|\bcurl\b|\bwget\b|requests\.(get|post)|urllib")
+FILE_ITEMS = [i for i in CATALOG.values() if not isinstance(i, Tool)]
+TOOLS = [i for i in CATALOG.values() if isinstance(i, Tool)]
+THIRD_PARTY = [i for i in CATALOG.values() if i.upstream]
+ALLOWED_LICENSES = {"MIT", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause"}
+LICENSE_MARKERS = ("Permission is hereby granted", "Apache License", "Redistribution and use")
 REQUIRED_FRONTMATTER = {
     "skill": {"name", "description"},
     "agent": {"description"},
@@ -35,7 +40,7 @@ def main_file(item) -> Path:
     return path / "SKILL.md" if item.type == "skill" else path
 
 
-@pytest.mark.parametrize("item", CATALOG.values(), ids=list(CATALOG))
+@pytest.mark.parametrize("item", FILE_ITEMS, ids=lambda i: i.name)
 def test_item_is_well_formed(item):
     assert NAME_RE.match(item.name), "nombre: solo minúsculas, dígitos y guiones (máx. 64)"
     assert item.type in PATHS
@@ -62,7 +67,7 @@ def test_item_content_is_safe(item):
 
 
 def test_no_unregistered_files():
-    registered = {Path(i.relpath).parts for i in CATALOG.values()}
+    registered = {Path(i.relpath).parts for i in FILE_ITEMS}
     for kind in ("skills", "agents", "instructions"):
         for entry in (CATALOG_DIR / kind).iterdir():
             assert (kind, entry.name) in registered, f"{kind}/{entry.name} no está registrado en catalog.toml"
@@ -95,3 +100,33 @@ def test_has_evals(item):
 
 def test_base_instructions_exist():
     assert (CATALOG_DIR / "base" / "copilot-instructions.md").read_text(encoding="utf-8").strip()
+
+
+@pytest.mark.parametrize("item", THIRD_PARTY, ids=lambda i: i.name)
+def test_third_party_is_traceable_and_licensed(item):
+    up = item.upstream
+    assert {"repo", "ref", "path", "license", "adapted"} <= up.keys(), "upstream incompleto"
+    assert re.fullmatch(r"[0-9a-f]{40}", up["ref"]), "ref debe ser un commit sha completo"
+    assert up["license"] in ALLOWED_LICENSES, f"licencia no permitida: {up['license']}"
+    files = item.files()
+    texts = [data.decode("utf-8", errors="ignore") for rel, data in files.items()]
+    if item.type == "skill":
+        assert any(rel.endswith("/LICENSE") for rel in files), "falta el LICENSE original en la carpeta"
+    assert any(marker in text for text in texts for marker in LICENSE_MARKERS), "falta el texto de licencia"
+
+
+@pytest.mark.parametrize("tool", TOOLS, ids=lambda i: i.name)
+def test_tool_is_well_formed(tool):
+    assert re.match(r"^\d+\.\d+\.\d+$", tool.version)
+    assert tool.license in ALLOWED_LICENSES, f"licencia no permitida: {tool.license}"
+    assert tool.check and tool.install and tool.configure, "check, install y configure son obligatorios"
+    for cmd in (*tool.install, *tool.configure, *tool.uninstall, tool.check):
+        assert isinstance(cmd, tuple) and all(isinstance(a, str) for a in cmd), (
+            "cada comando es una lista de str"
+        )
+        assert not any(a in {"sh", "bash", "cmd", "powershell"} or "|" in a or "&&" in a for a in cmd), (
+            "los comandos no pueden invocar un shell"
+        )
+    assert any(tool.version in arg for cmd in tool.install for arg in cmd), (
+        "install debe fijar la versión aprobada"
+    )
