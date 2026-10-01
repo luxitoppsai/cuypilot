@@ -13,4 +13,4 @@ distribuido como wheel con una CLI que los instala en el workspace de cada proye
 
 ## Repo
 - Local: `/Users/luissanchez/Documents/Luis_projects/cuypilot`
-- Remote: pendiente (se hará push más adelante al GitHub Enterprise del trabajo)
+- Remote: https://github.com/luxitoppsai/cuypilot (privado)
