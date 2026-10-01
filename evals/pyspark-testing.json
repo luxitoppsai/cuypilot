@@ -1,0 +1,10 @@
+{
+  "item": "pyspark-testing",
+  "cases": [
+    {"kind": "trigger", "prompt": "Escribe tests para la función que calcula el monto neto en transforms.py", "expected": "Usa fixture spark (copia assets/conftest.py si no existe), DataFrames de pocas filas con esquema explícito, assertDataFrameEqual, casos de nulos/vacío/duplicados."},
+    {"kind": "trigger", "prompt": "Quiero empezar a testear el código PySpark de este repo, no hay nada", "expected": "Propone conftest.py con SparkSession local, pyspark 3.5.* en dev, y un primer test de ejemplo."},
+    {"kind": "no-trigger", "prompt": "Escribe tests para la función que valida el RUC (puro Python)", "expected": "No activa pyspark-testing; corresponde test-driven-development o tests normales."},
+    {"kind": "coexistence", "prompt": "Este join es lento, mejóralo", "expected": "Activa pyspark-optimize, no pyspark-testing (aunque puede sugerir un test antes del cambio)."},
+    {"kind": "edge", "prompt": "Agrega tests de Spark; el proyecto usa databricks-connect", "expected": "Explica que databricks-connect no tiene motor local y pregunta: entorno separado con pyspark o DatabricksSession contra un cluster."}
+  ]
+}

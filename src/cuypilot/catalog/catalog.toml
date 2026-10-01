@@ -139,3 +139,8 @@ instructions = """
 type = "skill"
 version = "1.0.0"
 description = "Detecta y corrige anti-patrones de PySpark (script spark_lint.py, 12 reglas) sin cambiar resultados; guía Databricks/Delta."
+
+[items.pyspark-testing]
+type = "skill"
+version = "1.0.0"
+description = "Tests unitarios de transformaciones PySpark: fixture SparkSession local, DataFrames pequeños, assertDataFrameEqual."
