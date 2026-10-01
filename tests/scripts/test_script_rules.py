@@ -9,7 +9,9 @@ from cuypilot.catalog import CATALOG_DIR
 
 SCRIPTS = sorted(CATALOG_DIR.glob("skills/*/scripts/*.py"))
 NETWORK = {"socket", "http", "urllib", "ftplib", "smtplib", "requests", "httpx", "aiohttp"}
-WRITES = {"write_text", "write_bytes", "unlink", "rmdir", "rename", "replace", "mkdir", "remove", "rmtree"}
+WRITES = {"write_text", "write_bytes", "unlink", "rmdir", "rename", "mkdir", "touch", "rmtree"}
+#: Ambiguos (str.replace, list.remove): solo cuentan si vienen de os/shutil.
+FS_MODULE_WRITES = {"remove", "replace", "makedirs", "removedirs", "copy", "copyfile", "move"}
 
 
 @pytest.mark.parametrize("script", SCRIPTS, ids=lambda p: f"{p.parents[1].name}/{p.name}")
@@ -30,6 +32,10 @@ def test_script_follows_rules(script):
             func = node.func
             name = getattr(func, "attr", getattr(func, "id", ""))
             assert name not in WRITES, f"línea {node.lineno}: {name}() escribe en disco"
+            module = getattr(getattr(func, "value", None), "id", "")
+            assert not (module in ("os", "shutil") and name in FS_MODULE_WRITES), (
+                f"línea {node.lineno}: escribe en disco"
+            )
             if name == "open":
                 mode = (
                     node.args[1]
