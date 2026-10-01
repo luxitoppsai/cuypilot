@@ -1,0 +1,11 @@
+{
+  "item": "pyspark-optimize",
+  "cases": [
+    {"kind": "trigger", "prompt": "Este notebook de PySpark es lentísimo, optimízalo", "expected": "Ejecuta spark_lint.py primero, prioriza HIGH, corrige de a una regla sin cambiar el resultado y propone tests si no hay."},
+    {"kind": "trigger", "prompt": "Quita la UDF que uso para limpiar nombres, se demora mucho", "expected": "Reemplaza la UDF por funciones nativas (regexp_replace, trim, lower) o pandas_udf; verifica igualdad de resultados."},
+    {"kind": "no-trigger", "prompt": "Agrega docstrings a transform.py", "expected": "No activa pyspark-optimize."},
+    {"kind": "coexistence", "prompt": "Te pego el explain('formatted') y las métricas de la Spark UI con mucho spill, ¿qué pasa?", "expected": "Corresponde al agente spark-performance (diagnóstico con evidencia), no a pyspark-optimize."},
+    {"kind": "coexistence", "prompt": "Refactoriza utils.py (no tiene Spark), funciones muy largas", "expected": "Activa python-refactor, no pyspark-optimize."},
+    {"kind": "edge", "prompt": "Optimiza este collect(), aunque creo que el DataFrame ya viene agregado", "expected": "Confirma el volumen antes de cambiar; si ya está reducido, lo deja y explica por qué."}
+  ]
+}

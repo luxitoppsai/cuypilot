@@ -132,3 +132,10 @@ gitignore = ["graphify-out/", "graph.json"]
 instructions = """
 - When running `graphify extract` from the terminal, always pass `--code-only` unless the team has approved a `--backend`.
   Without it, graphify sends docs/PDFs/images to whichever external LLM provider matches an API key found in the environment."""
+
+# --- Contenido de dominio (RFC-003) ---
+
+[items.pyspark-optimize]
+type = "skill"
+version = "1.0.0"
+description = "Detecta y corrige anti-patrones de PySpark (script spark_lint.py, 12 reglas) sin cambiar resultados; guía Databricks/Delta."
