@@ -73,6 +73,6 @@ uv build             # genera dist/cuypilot-X.Y.Z-py3-none-any.whl
 
 - Contribuir: [`CONTRIBUTING.md`](CONTRIBUTING.md)
 - Cambios por versión: [`CHANGELOG.md`](CHANGELOG.md)
-- Contratos: [`RFC.md`](RFC.md) (RFC-001, base) · [`docs/rfc/RFC-002-integraciones-terceros.md`](docs/rfc/RFC-002-integraciones-terceros.md) (scripts y terceros)
+- Contratos: [`RFC.md`](RFC.md) (RFC-001, base) · [`RFC-002`](docs/rfc/RFC-002-integraciones-terceros.md) (scripts y terceros) · [`RFC-003`](docs/rfc/RFC-003-contenido-dominio.md) (PySpark, ML, docs; borrador)
 - Investigación: [`docs/research/estado-del-arte.md`](docs/research/estado-del-arte.md)
 - Segundo cerebro: `luxitopp-vault/10-Projects/cuypilot/cuypilot.md` (ver [`PROJECT.md`](PROJECT.md))
