@@ -22,8 +22,7 @@ Goal: a `docs/` folder that builds without warnings and has a clear split betwee
 
    - Replace `<paquete>` in `tecnica/index.md` with the importable package name(s), one per line.
    - In `conf.py`, adjust `sys.path` for a flat layout and extend `autodoc_mock_imports` with any heavy dependency the package imports (cluster-only libraries) so the docs build anywhere.
-3. **Dependencies** (propose, and run only after the user agrees): add to a `docs` dependency group, e.g.
-   `uv add --group docs sphinx myst-parser furo` (or the project's equivalent in `requirements-docs.txt`).
+3. **Dependencies** (propose, and run only after the user agrees): `sphinx`, `myst-parser` and `furo`. Follow the project's convention: add them to `requirements-docs.txt` (or a `docs` dependency group in `pyproject.toml`) and install with `pip install -r requirements-docs.txt` inside the project's virtual environment. Do not assume `uv` or `pipx` are available.
 4. **Ignore generated files**: add `docs/_build/` and `docs/tecnica/_autosummary/` to `.gitignore`.
 5. **Build and fix until clean**:
 

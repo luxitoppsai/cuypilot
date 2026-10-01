@@ -12,8 +12,8 @@
 
 2. Regístrala en `src/cuypilot/catalog/catalog.toml` con `type`, `version`, `description` y, si aplica, `owner` y `requires`.
 3. Si es una skill o un agente, crea `evals/<name>.json` con al menos 3 casos, incluyendo `trigger` y `no-trigger` (ver los existentes).
-4. Corre `uv run pytest` (valida el catálogo) y `uv run ruff check .`.
-5. Prueba la pieza en VS Code: en un proyecto de prueba, `uv pip install -e <ruta-a-cuypilot>` y `cuypilot add <name>`. Ejecuta tus evals a mano.
+4. Corre `pytest` (valida el catálogo) y `ruff check .` (instala lo necesario con `pip install -e . --group dev`).
+5. Prueba la pieza en VS Code: en un proyecto de prueba, `pip install -e <ruta-a-cuypilot>` y `cuypilot add <name>`. Ejecuta tus evals a mano.
 6. Abre un PR y completa el checklist.
 
 ## Reglas de contenido
@@ -55,12 +55,12 @@ Si una parte del trabajo es determinista (contar, listar, medir), conviértela e
 
 Para programas externos que tienen su propio instalador (por ejemplo `graphify`). En `catalog.toml`:
 
-- `install`, `configure`, `uninstall` y `check` son **listas de argumentos**: nunca un shell, `|` ni `&&`. `configure` y `uninstall` son opcionales (herramientas de solo terminal).
-- `install` fija la **versión aprobada** (igual a `version`).
+- `package` es el paquete de PyPI fijado a la **versión aprobada** (`nombre==versión`, igual a `version`); cuypilot lo instala con `python -m pip install` en el entorno virtual del proyecto (sin uv ni pipx).
+- `configure`, `uninstall` y `check` son **listas de argumentos**: nunca un shell, `|` ni `&&`. `configure` y `uninstall` son opcionales (herramientas de solo terminal).
 - `gitignore`: lo que la herramienta genera en el repo.
 - `instructions`: regla de uso seguro que se agrega al bloque gestionado mientras esté instalada.
 
-Pruébala de punta a punta en un entorno aislado (por ejemplo, un venv con `HOME` temporal), incluyendo
+Pruébala de punta a punta en un entorno aislado (un `python -m venv` nuevo, sin activar, y con `HOME` temporal), incluyendo
 `remove` y la convivencia con el bloque gestionado de `copilot-instructions.md`.
 
 ## Versionado
@@ -70,4 +70,4 @@ Pruébala de punta a punta en un entorno aislado (por ejemplo, un venv con `HOME
   - MAJOR: se quita o renombra una pieza, o hay un cambio incompatible en la CLI o el lockfile.
   - MINOR: piezas o comandos nuevos.
   - PATCH: correcciones.
-- **Release:** sube la versión (`uv version --bump minor`), actualiza `CHANGELOG.md`, crea el tag `vX.Y.Z` y haz push del tag. El CI construye el wheel y lo deja como artifact.
+- **Release:** sube `version` en `pyproject.toml`, actualiza `CHANGELOG.md`, crea el tag `vX.Y.Z` y haz push del tag. El CI construye el wheel y lo deja como artifact (localmente: `python -m build`).

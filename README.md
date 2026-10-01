@@ -11,17 +11,14 @@ necesita**, que quedan versionadas en su propio repositorio.
 
 ## Instalación
 
-Requisitos: Python ≥3.11 y VS Code con GitHub Copilot Chat.
+Requisitos: Python ≥3.11, pip y VS Code con GitHub Copilot Chat. **No necesita uv ni pipx.**
 
-cuypilot se instala como **dependencia de desarrollo** del proyecto donde lo vas a usar:
+cuypilot se instala como **dependencia de desarrollo**, en el entorno virtual del proyecto donde lo vas a usar:
 
 ```bash
-# con uv (recomendado)
-uv add --dev <ruta>/cuypilot-0.3.0-py3-none-any.whl
-
-# o con pip (en tu requirements-dev.txt)
-pip install <ruta>/cuypilot-0.3.0-py3-none-any.whl
-
+python -m venv .venv                 # si el proyecto aún no tiene uno
+source .venv/bin/activate            # Windows: .venv\Scripts\activate
+pip install <ruta>/cuypilot-0.3.1-py3-none-any.whl   # y agrega esa línea a tu requirements-dev.txt
 cuypilot --version
 ```
 
@@ -75,10 +72,11 @@ Detalle, ejemplos y combinaciones por rol: **[guía de usuario](docs/guia-usuari
 ## Desarrollo
 
 ```bash
-uv sync
-uv run pytest        # incluye la validación del catálogo, licencias y scripts
-uv run ruff check .
-uv build             # genera dist/cuypilot-X.Y.Z-py3-none-any.whl
+python -m venv .venv && source .venv/bin/activate
+pip install -e . --group dev   # pip ≥25.1; con un pip anterior: pip install -e . pytest ruff build
+pytest                         # incluye la validación del catálogo, licencias y scripts
+ruff check .
+python -m build                # genera dist/cuypilot-X.Y.Z-py3-none-any.whl
 ```
 
 - Contribuir: [`CONTRIBUTING.md`](CONTRIBUTING.md)

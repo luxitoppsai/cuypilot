@@ -28,40 +28,36 @@ a día y qué cambia en tu repositorio.
 |---|---|
 | Python **3.11 o superior** | Ejecutar la CLI `cuypilot` y los scripts de las skills |
 | VS Code con **GitHub Copilot Chat** | Usar lo que instala cuypilot |
-| `uv` (recomendado) o `pip` | Instalar el wheel |
-| `uv` | Solo si vas a instalar las herramientas `graphify` o `pyspark-antipattern` |
+| `pip` y un entorno virtual (`python -m venv`) | Instalar el wheel y las herramientas opcionales. **No hace falta uv ni pipx** |
 | Java (JDK 17) | Solo para correr tests de PySpark en tu máquina (`pyspark-testing`) |
 
 Las skills de PySpark asumen **Databricks Runtime 15.4 LTS o superior** (Spark ≥3.5, Python ≥3.11).
 
 ## 2. Instalación
 
-cuypilot se instala como **dependencia de desarrollo** del proyecto donde lo vas a usar. El wheel
-está disponible en `<ruta>`.
-
-**Con uv (recomendado):**
+cuypilot se instala como **dependencia de desarrollo**, en el **entorno virtual del proyecto** donde lo
+vas a usar. El wheel está disponible en `<ruta>`.
 
 ```bash
-uv add --dev <ruta>/cuypilot-0.3.0-py3-none-any.whl
+python -m venv .venv                     # si el proyecto aún no tiene entorno virtual
+source .venv/bin/activate                # Windows: .venv\Scripts\activate
+pip install <ruta>/cuypilot-0.3.1-py3-none-any.whl
 ```
 
-**Con pip:** agrega la ruta del wheel a tu `requirements-dev.txt` e instálalo:
-
-```bash
-pip install <ruta>/cuypilot-0.3.0-py3-none-any.whl
-```
+Agrega esa misma línea (la ruta del wheel) a tu `requirements-dev.txt`, para que el resto del equipo lo
+instale con `pip install -r requirements-dev.txt`.
 
 Comprueba que quedó instalado:
 
 ```bash
-cuypilot --version      # con uv: uv run cuypilot --version
+cuypilot --version
 ```
 
 > ⚠️ **Nunca** lo pongas en el `requirements.txt` que se instala en el cluster de Databricks: es una
 > herramienta para tu máquina de desarrollo, no para producción.
 
-> Si usas `uv` y el comando `cuypilot` no aparece en tu terminal, antepón `uv run` (por ejemplo
-> `uv run cuypilot list`) o activa el entorno virtual del proyecto.
+> Si la terminal no encuentra `cuypilot`, activa el entorno virtual o ejecútalo con su ruta
+> (`.venv/bin/cuypilot`, en Windows `.venv\Scripts\cuypilot`).
 
 ## 3. Primeros pasos (5 minutos)
 
@@ -242,7 +238,8 @@ cuypilot add graphify              # pide confirmación y lo instala
 
 Qué ocurre:
 
-1. Si no tienes la versión aprobada, se ejecuta `uv tool install graphifyy==<versión>`.
+1. Si no tienes la versión aprobada, se ejecuta `python -m pip install graphifyy==<versión>` **en el
+   entorno virtual del proyecto** (el mismo donde instalaste cuypilot).
 2. Se ejecuta `graphify vscode install`. Esto instala la skill `/graphify` **en tu usuario**
    (`~/.copilot/skills/graphify`) y agrega una sección `## graphify` a `.github/copilot-instructions.md`.
 3. Se agregan `graphify-out/` y `graph.json` al `.gitignore`.
@@ -260,7 +257,12 @@ graphify extract . --code-only
 
 **Quitarlo:** `cuypilot remove graphify` ejecuta `graphify vscode uninstall`. Ten en cuenta que ese
 comando quita la skill de **tu usuario**, así que graphify deja de estar disponible en todos tus
-proyectos. El programa `graphify` sigue instalado; para quitarlo del todo: `uv tool uninstall graphifyy`.
+proyectos. El programa `graphify` sigue instalado en el entorno virtual; para quitarlo del todo:
+`pip uninstall graphifyy`.
+
+> Copilot ejecuta `graphify` en la terminal de VS Code. Esa terminal debe tener activado el entorno
+> virtual del proyecto (la extensión de Python de VS Code lo activa automáticamente si el intérprete
+> seleccionado es el del `.venv`).
 
 ### pyspark-antipattern
 
@@ -268,7 +270,7 @@ Linter de PySpark (más de 60 reglas) que complementa al script de `pyspark-opti
 la terminal, así que no hay que conectarlo a VS Code:
 
 ```bash
-cuypilot add pyspark-antipattern                   # uv tool install pyspark-antipattern==<versión>
+cuypilot add pyspark-antipattern                   # pip install pyspark-antipattern==<versión> en el .venv
 pyspark-antipattern check src/                     # también puedes usarlo tú directamente
 ```
 
@@ -305,7 +307,7 @@ Todos son **solo lectura**, usan solo la librería estándar de Python y no acce
 Cuando haya una versión nueva del wheel:
 
 ```bash
-uv add --dev <ruta>/cuypilot-<nueva-versión>-py3-none-any.whl   # o pip install …
+pip install <ruta>/cuypilot-<nueva-versión>-py3-none-any.whl   # actualiza también requirements-dev.txt
 cuypilot status       # mira qué cambió
 cuypilot update       # actualiza lo instalado
 git add .github && git commit -m "chore: update cuypilot pieces"
@@ -319,14 +321,14 @@ Los cambios de cada versión están en el [`CHANGELOG.md`](../CHANGELOG.md).
 | Problema | Solución |
 |---|---|
 | La skill no aparece al escribir `/` en Copilot Chat | Recarga la ventana (**Developer: Reload Window**) y verifica que exista `.github/skills/<nombre>/SKILL.md` |
-| `cuypilot: command not found` | Usa `uv run cuypilot …` o activa el entorno virtual del proyecto |
+| `cuypilot: command not found` | Activa el entorno virtual del proyecto o usa `.venv/bin/cuypilot` (Windows: `.venv\Scripts\cuypilot`) |
 | `Estos archivos ya existen y no son de cuypilot` | Ya tenías un archivo con ese nombre. Revísalo; si quieres reemplazarlo, `--force` |
 | `` `X` depende de Y `` al hacer `remove` | Quita también la pieza que depende (por ejemplo `remove docs-writer sphinx-docstrings`) |
 | La red bloquea la instalación de graphify | `cuypilot add graphify --dry-run` muestra los comandos; ejecútalos por la vía que tengas disponible y luego repite `cuypilot add graphify` |
 | Los tests de PySpark fallan con "Java gateway process exited" o "Unable to locate a Java Runtime" | Instala un JDK 17 (por ejemplo Temurin) y vuelve a correr `pytest` |
 | El proyecto usa `databricks-connect` y no hay `SparkSession` local | `databricks-connect` reemplaza a `pyspark` y no tiene motor local: corre los tests unitarios en un entorno con `pyspark==3.5.*` (ver `pyspark-testing`) |
 | `sphinx-build -W` falla por un docstring | El mensaje indica el archivo y la línea; corrige el formato reST (o usa `sphinx-docstrings`) |
-| `graphify: command not found` tras instalarlo | Ejecuta `uv tool update-shell` y abre una terminal nueva |
+| `graphify: command not found` en la terminal de VS Code | Activa el entorno virtual del proyecto en esa terminal, o selecciona el intérprete del `.venv` (**Python: Select Interpreter**) |
 | Aviso "este directorio no es la raíz de un repo git" | Ejecuta cuypilot desde la raíz del repositorio |
 
 ## 12. Seguridad y datos

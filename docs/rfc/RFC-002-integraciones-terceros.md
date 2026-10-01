@@ -246,6 +246,6 @@ En el entorno de trabajo **no se pueden usar uv ni pipx**. Cambios:
 - **Consecuencia:** cada herramienta queda instalada en el entorno virtual del proyecto, no a nivel de
   usuario. Copilot la encuentra en las terminales de VS Code que tengan ese entorno activado (la extensión
   de Python lo activa por defecto).
-- **Build y desarrollo de cuypilot:** el backend pasa de `uv_build` a `setuptools`. El build se hace con
+- **Build y desarrollo de cuypilot:** el backend pasa de `uv_build` a `hatchling` (estándar, desde PyPI; se probó `setuptools`, pero da advertencias con las carpetas de datos que contienen `.py`). El build se hace con
   `python -m build` y el desarrollo con `pip install -e . --group dev`.
 - **CI:** `actions/setup-python` + pip (funciona también en runners de GitHub Enterprise).

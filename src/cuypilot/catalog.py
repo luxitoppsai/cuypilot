@@ -50,7 +50,11 @@ class Item:
         :returns: Mapa de ruta relativa (estilo POSIX, relativa a ``root``) a bytes.
         """
         source = root / self.relpath
-        paths = sorted(p for p in source.rglob("*") if p.is_file()) if source.is_dir() else [source]
+        if source.is_dir():
+            # pip compila bytecode al instalar: __pycache__ nunca se copia al repo del usuario.
+            paths = sorted(p for p in source.rglob("*") if p.is_file() and "__pycache__" not in p.parts)
+        else:
+            paths = [source]
         return {p.relative_to(root).as_posix(): p.read_bytes() for p in paths}
 
 
@@ -61,7 +65,7 @@ class Tool(Item):
     Los comandos son listas de argumentos: se ejecutan sin shell.
 
     :param license: Licencia de la herramienta.
-    :param install: Comandos que instalan la versión aprobada.
+    :param package: Paquete de PyPI fijado a la versión aprobada (``nombre==versión``); se instala con pip.
     :param configure: Comandos que la conectan al workspace.
     :param uninstall: Comandos que la desconectan del workspace.
     :param check: Comando cuya salida contiene la versión instalada.
@@ -70,7 +74,7 @@ class Tool(Item):
     """
 
     license: str = ""
-    install: tuple[tuple[str, ...], ...] = ()
+    package: str = ""
     configure: tuple[tuple[str, ...], ...] = ()
     uninstall: tuple[tuple[str, ...], ...] = ()
     check: tuple[str, ...] = ()

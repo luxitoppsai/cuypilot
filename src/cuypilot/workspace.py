@@ -5,7 +5,9 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import shutil
 import subprocess
+import sys
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -37,17 +39,25 @@ def _sha(data: bytes) -> str:
     return "sha256:" + hashlib.sha256(data).hexdigest()
 
 
+def pip_install(package: str) -> Command:
+    """Comando que instala ``package`` en el mismo entorno de Python que ejecuta cuypilot."""
+    return (sys.executable, "-m", "pip", "install", package)
+
+
 def run_command(cmd: Command, cwd: Path) -> tuple[int, str]:
     """Ejecuta un comando del catálogo sin shell.
+
+    El programa se busca en el ``PATH`` y, si no está, en la carpeta de ejecutables del entorno virtual
+    actual (así funciona aunque el entorno no esté activado).
 
     :param cmd: Programa y argumentos.
     :param cwd: Directorio de trabajo.
     :returns: Código de salida y salida combinada (stdout + stderr).
     """
-    try:
-        result = subprocess.run(list(cmd), cwd=cwd, capture_output=True, text=True)
-    except FileNotFoundError:
+    program = shutil.which(cmd[0]) or shutil.which(cmd[0], path=str(Path(sys.executable).parent))
+    if program is None:
         return 127, f"comando no encontrado: {cmd[0]}"
+    result = subprocess.run([program, *cmd[1:]], cwd=cwd, capture_output=True, text=True)
     return result.returncode, result.stdout + result.stderr
 
 
@@ -202,7 +212,7 @@ class Workspace:
             else:
                 pending.append(name)
         tools = [self.catalog[n] for n in pending if isinstance(self.catalog[n], Tool)]
-        self._execute([cmd for tool in tools for cmd in (*tool.install, *tool.configure)])
+        self._execute([cmd for tool in tools for cmd in (pip_install(tool.package), *tool.configure)])
         for name in pending:
             self._uninstall(name)
             for item in self._resolve([name]):  # incluye requires nuevos
@@ -230,7 +240,7 @@ class Workspace:
         return match.group(0) if match else None
 
     def _tool_commands(self, tool: Tool) -> list[Command]:
-        install = [] if self._tool_version(tool) == tool.version else list(tool.install)
+        install = [] if self._tool_version(tool) == tool.version else [pip_install(tool.package)]
         return install + list(tool.configure)
 
     def _execute(self, commands: list[Command]) -> None:

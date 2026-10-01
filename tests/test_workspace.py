@@ -171,3 +171,16 @@ def test_v010_block_format_is_migrated(tmp_path):
     text = path.read_text()
     assert text.count(START) == 1 and "old" not in text
     assert text.startswith("# Mine\n\n## Team conventions (managed by cuypilot")
+
+
+def test_bytecode_caches_are_never_copied(tmp_path):
+    """pip compila bytecode al instalar el wheel: los __pycache__ del catálogo no deben llegar al repo."""
+    catalog = tmp_path / "catalog"
+    shutil.copytree(CATALOG_DIR, catalog)
+    cache = catalog / "skills/sphinx-docstrings/scripts/__pycache__"
+    cache.mkdir(exist_ok=True)
+    (cache / "docstring_audit.cpython-311.pyc").write_bytes(b"\x00")
+
+    project = tmp_path / "project"
+    ws(project, catalog).add(["sphinx-docstrings"])
+    assert not list(project.rglob("__pycache__"))

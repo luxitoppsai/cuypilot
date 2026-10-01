@@ -2,6 +2,20 @@
 
 Formato: [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado: semver (ver `CONTRIBUTING.md`).
 
+## [0.3.1] - 2026-10-01
+
+Funciona **solo con pip**: sin uv ni pipx (enmienda a RFC-002).
+
+### Cambiado
+- Herramientas: el catálogo declara `package = "nombre==versión"` y cuypilot lo instala con `python -m pip install` en el entorno virtual del proyecto (antes `uv tool install`).
+- Los ejecutables de las herramientas se buscan también en el `bin`/`Scripts` del entorno virtual, aunque no esté activado.
+- Build con `hatchling` (antes `uv_build`); desarrollo con `pip install -e . --group dev` y `python -m build`.
+- CI con `actions/setup-python` + pip.
+- README, guía y CONTRIBUTING sin uv. `sphinx-setup` 1.0.1: dependencias de docs con pip.
+
+### Corregido
+- pip compila bytecode al instalar el wheel: los `__pycache__` del catálogo ya no se copian al repo del usuario.
+
 ## [0.3.0] - 2026-09-30
 
 ### CLI

@@ -117,14 +117,15 @@ path = "agents/spark-performance.agent.md"
 license = "MIT"
 adapted = true   # sin artefactos de citas; el reporte escrito solo si el usuario lo pide
 
-# --- Herramientas externas (RFC-002 §4.3). Los comandos se ejecutan sin shell y con confirmación. ---
+# --- Herramientas externas (RFC-002 §4.3 + enmienda): `package` se instala con pip en el entorno del
+# proyecto; los comandos se ejecutan sin shell y con confirmación. ---
 
 [items.graphify]
 type = "tool"
 version = "0.9.73"
 description = "Grafo de conocimiento del repo para Copilot (/graphify); el código se procesa localmente con tree-sitter."
 license = "Apache-2.0"
-install = [["uv", "tool", "install", "graphifyy==0.9.73"]]
+package = "graphifyy==0.9.73"
 configure = [["graphify", "vscode", "install"]]
 uninstall = [["graphify", "vscode", "uninstall"]]
 check = ["graphify", "--version"]
@@ -162,7 +163,7 @@ description = "Revisión de código ML sin editar: leakage, splits, semillas, m�
 
 [items.sphinx-setup]
 type = "skill"
-version = "1.0.0"
+version = "1.0.1"
 description = "Crea o repara docs/ con Sphinx: sección técnica (autodoc/autosummary) y funcional (MyST), tema furo, build sin warnings."
 
 [items.pyspark-antipattern]
@@ -170,7 +171,7 @@ type = "tool"
 version = "0.4.1"
 description = "Linter externo de PySpark (60+ reglas, Rust) que complementa a spark_lint.py; solo terminal."
 license = "MIT"
-install = [["uv", "tool", "install", "pyspark-antipattern==0.4.1"]]
+package = "pyspark-antipattern==0.4.1"
 check = ["pyspark-antipattern", "--version"]
 
 # --- Combinaciones sugeridas por rol (las usa `cuypilot init`) ---

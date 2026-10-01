@@ -119,17 +119,17 @@ def test_third_party_is_traceable_and_licensed(item):
 def test_tool_is_well_formed(tool):
     assert re.match(r"^\d+\.\d+\.\d+$", tool.version)
     assert tool.license in ALLOWED_LICENSES, f"licencia no permitida: {tool.license}"
-    assert tool.check and tool.install, "check e install son obligatorios (configure es opcional)"
-    for cmd in (*tool.install, *tool.configure, *tool.uninstall, tool.check):
+    assert tool.check and tool.package, "check y package son obligatorios (configure es opcional)"
+    assert tool.package.endswith(f"=={tool.version}"), (
+        "package debe fijar la versión aprobada (nombre==versión)"
+    )
+    for cmd in (*tool.configure, *tool.uninstall, tool.check):
         assert isinstance(cmd, tuple) and all(isinstance(a, str) for a in cmd), (
             "cada comando es una lista de str"
         )
         assert not any(a in {"sh", "bash", "cmd", "powershell"} or "|" in a or "&&" in a for a in cmd), (
             "los comandos no pueden invocar un shell"
         )
-    assert any(tool.version in arg for cmd in tool.install for arg in cmd), (
-        "install debe fijar la versión aprobada"
-    )
 
 
 def test_roles_reference_existing_pieces():
