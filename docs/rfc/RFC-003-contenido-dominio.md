@@ -59,11 +59,12 @@ Que un miembro del equipo pueda, desde Copilot:
 | `ml-review` | skill | — | Revisión de código ML: *leakage*, splits, semillas, métricas, registro en MLflow |
 | `sphinx-setup` | skill | — (plantillas en `assets/`) | Crear o reparar `docs/` con Sphinx: autodoc, autosummary, MyST, secciones técnica y funcional |
 | `functional-docs` | skill | `data_flow.py` | Documentación funcional de un pipeline o modelo: propósito, entradas y salidas, reglas de negocio, parámetros, calendario |
+| `pyspark-antipattern` | tool | — | Linter externo opcional (60+ reglas) que complementa a `spark_lint.py` |
+| `cuypilot init` | CLI | — | Wizard de bienvenida con banner ASCII: elige tu rol y te sugiere qué instalar (§4.8) |
 
 **Fuera (no-objetivos):**
 - Ejecutar código en clusters o leer la Spark UI (no hay acceso desde el editor). El diagnóstico con
   evidencia lo sigue haciendo el agente `spark-performance`.
-- Linters externos como dependencia: ver §5 y §10.
 - Optimización de pandas (podría entrar en otra RFC si hay demanda).
 - Publicar la documentación (hosting, CI de docs): queda en manos de cada proyecto.
 
@@ -185,7 +186,61 @@ docs/
 Lo que el código no revela (propósito, responsables, calendario) **lo pregunta o lo deja marcado como
 `[COMPLETAR]`; nunca lo inventa**. Por defecto en español.
 
-### 4.7 Evals y versión
+### 4.7 Compatibilidad con los runtimes del equipo
+
+| Runtime | Spark | Python | Notas que aplican las skills |
+|---|---|---|---|
+| Databricks Runtime 13.3 LTS (**sin soporte de Databricks**) | 3.4.1 | 3.10 | Sin `assertDataFrameEqual`: comparar esquema + `sorted(collect())`. `spark.sql(args=...)` solo con literales SQL en texto. Liquid clustering solo en vista previa: usar particionado/ZORDER |
+| Databricks Runtime 15.4 LTS | 3.5.0 | 3.11 | `assertDataFrameEqual` disponible; `spark.sql(args=...)` con valores Python; liquid clustering GA para tablas nuevas |
+
+Las skills preguntan o detectan (`workspace_context.py`, versión de `pyspark` o `databricks-connect` en las
+dependencias) en qué runtime está el proyecto, y dan la recomendación correspondiente.
+
+**Impacto en cuypilot:** para que los proyectos de 13.3 (Python 3.10) puedan usarlo, cuypilot y sus
+scripts pasan a requerir **Python ≥3.10**:
+- la CLI lee `catalog.toml` con `tomllib`, o con `tomli` en 3.10 (dependencia condicional mínima);
+- los scripts no usan `tomllib` (o lo importan con alternativa) y el CI compila todos los scripts con 3.10.
+
+Esto cambia una decisión de RFC-001 (§10, punto 1) y queda pendiente de confirmación (§10).
+
+### 4.8 `cuypilot init`: wizard con banner
+
+pip no puede ejecutar código al instalar un wheel. Por eso la "instalación" visible es un wizard que se
+ejecuta con `cuypilot init`, o con `cuypilot` sin argumentos, si el repo todavía no tiene piezas instaladas:
+
+```
+   ___  _   _  _   _  ____   ___  _      ___  _____
+  / __|| | | || | | ||  _ \ |_ _|| |    / _ \|_   _|
+ | (__ | |_| || |_| || |_) | | | | |__ | (_) | | |
+  \___| \___/  \__, ||  __/ |___||____| \___/  |_|
+               |___/ |_|            v0.3.0 · Copilot toolkit
+
+  ¿Cuál es tu rol?
+    1) Desarrollador Python
+    2) Data scientist
+    3) ML engineer / data engineer (PySpark)
+    4) Elegir piezas a mano
+  > 3
+
+  Te sugiero: python-standards, python-refactor, design-review, pyspark-optimize,
+              pyspark-testing, spark-performance, systematic-debugging
+  ¿Agregar herramientas opcionales? graphify [s/N], pyspark-antipattern [s/N]
+  ¿Instalar? [S/n]
+```
+
+- Solo stdlib (`input()`, colores ANSI). Sin colores si la salida no es una terminal o si existe `NO_COLOR`.
+- Las combinaciones por rol viven en `catalog.toml` (`[roles.<rol>]`) para no duplicarlas en el código y la guía.
+- Al final usa el mismo `add` de siempre (lockfile, confirmación de herramientas) y recuerda hacer commit.
+- `--role <rol> --yes` lo deja no interactivo (para CI o scripts).
+- El banner también aparece en `cuypilot --version`.
+
+### 4.9 `pyspark-antipattern` (tool opcional)
+
+Se instala con `uv tool install pyspark-antipattern==<versión>` y no necesita conectarse a VS Code.
+`pyspark-optimize` lo ejecuta si está instalado (`pyspark-antipattern check <path>`). Como es una
+herramienta de solo terminal, `configure` pasa a ser **opcional** para el tipo `tool`.
+
+### 4.10 Evals y versión
 
 - Cada skill con evals, incluyendo coexistencia:
   - `pyspark-optimize` vs `spark-performance` vs `python-refactor`;
@@ -240,16 +295,17 @@ No. Scripts deterministas y skills; el agente es Copilot.
 
 ## 10. Preguntas abiertas
 
-1. **¿Entran las 6 piezas o priorizamos?** Si hay que recortar, propongo empezar por `pyspark-optimize`,
-   `pyspark-testing`, `sphinx-setup` y `functional-docs`, y dejar `notebook-to-module` y `ml-review` para
-   v0.4.
-2. **Versión de Spark / Databricks Runtime** en los clusters del equipo (¿3.5 o 4.x?). Define qué APIs
-   recomiendan las skills.
-3. **¿Notebooks en `.py` (formato fuente de Databricks), `.ipynb`, o ambos?**
-4. **Documentación funcional:**
-   - ¿la plantilla de 9 secciones te sirve, o hay un formato corporativo que debamos seguir?
-   - ¿siempre en español?
-5. **Tema de Sphinx:** ¿alguno estándar en el trabajo? Si no, propongo `furo` (simple, con modo oscuro) o `pydata-sphinx-theme`.
-6. **Linter:** ¿te basta con nuestro `spark_lint.py` (12 reglas, sin instalar nada) o quieres además
-   `pyspark-antipattern` como `tool` opcional?
-7. **Stack de ML:** ¿scikit-learn / XGBoost / LightGBM con MLflow en Databricks? ¿Spark ML?
+Decisiones del 2026-09-30:
+- Entran las 6 skills.
+- Runtimes 13.3 LTS y 15.4 LTS (§4.7).
+- Notebooks `.py` e `.ipynb`.
+- Documentación funcional con la plantilla de §4.6, siempre en español.
+- Docstrings Sphinx (reST), sin tema corporativo → `furo` por defecto.
+- `pyspark-antipattern` como tool opcional.
+- ML: scikit-learn, XGBoost y LightGBM con MLflow, y también Spark ML.
+- Nuevo: wizard `cuypilot init` con banner (§4.8).
+
+Pendiente de confirmar:
+
+1. **Python ≥3.10** para cuypilot (antes ≥3.11), para soportar proyectos de 13.3 LTS (§4.7).
+2. ¿El runtime es **13.3 LTS**? (no existe un 13.5 LTS). Ojo: 13.3 ya no tiene soporte de Databricks.
