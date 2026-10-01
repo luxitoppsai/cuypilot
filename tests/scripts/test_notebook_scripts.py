@@ -122,3 +122,13 @@ def test_shared_helpers_stay_identical():
     a = _shared_functions(CATALOG_DIR / "skills/functional-docs/scripts/data_flow.py")
     b = _shared_functions(CATALOG_DIR / "skills/notebook-to-module/scripts/notebook_outline.py")
     assert a == b, "las funciones compartidas difieren: copia el bloque 'shared helpers' entre ambos scripts"
+
+
+def test_reassigned_variable_still_counts_as_input_and_imports_do_not(write, run_script, tmp_path):
+    nb = write(
+        "nb.py",
+        "# Databricks notebook source\nfrom pyspark.sql import functions as F\nventas = spark.table('t')\n"
+        "\n# COMMAND ----------\n\nventas = ventas.withColumn('x', F.lit(1))\ntotal = 1\nprint(total)\n",
+    )
+    cells = json.loads(run_script("notebook-to-module", "notebook_outline.py", str(nb), "--json"))
+    assert cells[1]["uses_from_earlier_cells"] == ["ventas (cell 1)"]

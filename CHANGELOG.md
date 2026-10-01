@@ -2,6 +2,26 @@
 
 Formato: [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado: semver (ver `CONTRIBUTING.md`).
 
+## [0.3.0] - 2026-09-30
+
+### CLI
+- `cuypilot init`: wizard con banner ASCII, elección de rol (`dev`, `ds`, `mle`, `docs`), herramientas opcionales e instalación guiada; `--role X --yes` para modo no interactivo. `cuypilot` sin argumentos abre el wizard si el repo no tiene piezas.
+- Las combinaciones por rol viven en `catalog.toml` (`[roles]`).
+- Las herramientas pueden no tener `configure` (herramientas de solo terminal).
+- Cancelar con Ctrl+C o sin entrada interactiva termina con un mensaje, sin traceback.
+
+### Piezas nuevas (RFC-003)
+- `pyspark-optimize` 1.0.0 + `spark_lint.py` (12 reglas; `.py`, notebooks de Databricks e `.ipynb`).
+- `pyspark-testing` 1.0.0 (+ `assets/conftest.py`, `assets/test_example.py`).
+- `notebook-to-module` 1.0.0 + `notebook_outline.py`.
+- `ml-review` 1.0.0 (scikit-learn, XGBoost, LightGBM, Spark ML, MLflow).
+- `sphinx-setup` 1.0.0 (plantillas técnica/funcional, tema `furo`; build `-W` verificado).
+- `functional-docs` 1.0.0 + `data_flow.py` + plantilla funcional de 9 secciones en español.
+- Herramienta `pyspark-antipattern` 0.4.1 (MIT).
+
+### Corregido
+- Docstring con reST inválido en `workspace.py` (lo detectó el build de Sphinx con `-W`).
+
 ## [0.2.0] - 2026-09-30
 
 ### CLI

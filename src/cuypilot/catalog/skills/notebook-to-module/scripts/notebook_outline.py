@@ -174,23 +174,27 @@ def io_calls(tree: ast.AST) -> dict[str, list[str]]:
 # --- end of shared helpers ------------------------------------------------------------------------------
 
 
-def defined_names(tree: ast.AST) -> set[str]:
-    """Names a cell defines at top level (assignments, functions, classes, imports)."""
-    names = set()
-    for node in getattr(tree, "body", []):
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-            names.add(node.name)
-        elif isinstance(node, (ast.Import, ast.ImportFrom)):
-            names |= {(a.asname or a.name).split(".")[0] for a in node.names}
+def first_assignments(tree: ast.AST) -> dict[str, int]:
+    """Line where each name is first assigned/defined in a cell (imports excluded: they are not data)."""
+    first: dict[str, int] = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
+            name = node.id
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            name = node.name
         else:
-            for sub in ast.walk(node):
-                if isinstance(sub, ast.Name) and isinstance(sub.ctx, ast.Store):
-                    names.add(sub.id)
-    return names
+            continue
+        first[name] = min(node.lineno, first.get(name, node.lineno))
+    return first
 
 
-def used_names(tree: ast.AST) -> set[str]:
-    return {n.id for n in ast.walk(tree) if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load)}
+def inputs_from_outside(tree: ast.AST, first: dict[str, int]) -> set[str]:
+    """Names read before (or on the same line as) their first assignment in the cell."""
+    return {
+        n.id
+        for n in ast.walk(tree)
+        if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load) and n.lineno <= first.get(n.id, n.lineno)
+    }
 
 
 def outline(path: Path) -> list[dict]:
@@ -229,11 +233,11 @@ def outline(path: Path) -> list[dict]:
                 and getattr(n.func, "id", getattr(n.func, "attr", "")) in ("display", "show")
                 for n in ast.walk(tree)
             )
-            mine = defined_names(tree)
+            first = first_assignments(tree)
             info["uses_from_earlier_cells"] = sorted(
-                f"{n} (cell {known[n]})" for n in used_names(tree) - mine if n in known
+                f"{n} (cell {known[n]})" for n in inputs_from_outside(tree, first) if n in known
             )
-            known.update(dict.fromkeys(mine, number))
+            known.update(dict.fromkeys(first, number))
         result.append({k: v for k, v in info.items() if v not in ([], 0, "")})
     return result
 

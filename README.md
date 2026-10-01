@@ -17,10 +17,10 @@ cuypilot se instala como **dependencia de desarrollo** del proyecto donde lo vas
 
 ```bash
 # con uv (recomendado)
-uv add --dev <ruta>/cuypilot-0.2.0-py3-none-any.whl
+uv add --dev <ruta>/cuypilot-0.3.0-py3-none-any.whl
 
 # o con pip (en tu requirements-dev.txt)
-pip install <ruta>/cuypilot-0.2.0-py3-none-any.whl
+pip install <ruta>/cuypilot-0.3.0-py3-none-any.whl
 
 cuypilot --version
 ```
@@ -29,7 +29,13 @@ cuypilot --version
 
 ## Uso rápido
 
-Desde la raíz de tu repo:
+Desde la raíz de tu repo, el wizard te guía (banner, rol, piezas sugeridas):
+
+```bash
+cuypilot init
+```
+
+O pieza por pieza:
 
 ```bash
 cuypilot list                                          # catálogo (* = instalada)
@@ -42,6 +48,7 @@ Después, en Copilot Chat, escribe `/` para ver las skills instaladas. Puedes es
 
 | Comando | Qué hace |
 |---|---|
+| `cuypilot init` | Wizard: elige tu rol e instala lo sugerido |
 | `cuypilot list` | Muestra el catálogo |
 | `cuypilot add <nombre>...` | Instala piezas y sus dependencias (`--dry-run` para ver antes qué haría) |
 | `cuypilot status` | Estado de lo instalado |
@@ -55,10 +62,13 @@ Después, en Copilot Chat, escribe `/` para ver las skills instaladas. Puedes es
 | `python-standards`, `python-design`, `python-refactor`, `design-review` | Criterios del equipo: KISS, YAGNI, OOP con criterio, SOLID y patrones, para diseñar, refactorizar y revisar |
 | `sphinx-docstrings`, `docs-writer` | Documentación técnica con Sphinx |
 | `improve-prompt` | `/improve-prompt <pedido>`: mejora tu prompt antes de ejecutarlo |
+| `pyspark-optimize`, `pyspark-testing`, `notebook-to-module` | PySpark en Databricks (15.4 LTS+): optimizar sin cambiar resultados, testear transformaciones, modularizar notebooks |
+| `ml-review` | Revisión de ML: fuga de datos, splits, semillas, métricas, MLflow |
+| `sphinx-setup`, `functional-docs` | Sphinx con secciones técnica y funcional; documentación funcional en español |
 | `ponytail`, `ponytail-audit`, `ponytail-debt` | Menos código: solución mínima y auditoría de sobreingeniería ([ponytail](https://github.com/DietrichGebert/ponytail)) |
 | `systematic-debugging`, `test-driven-development`, `verification-before-completion` | Metodología de [superpowers](https://github.com/obra/superpowers) |
 | `spark-performance` | Agente de rendimiento PySpark ([awesome-copilot](https://github.com/github/awesome-copilot)) |
-| `graphify` | Herramienta: grafo de conocimiento del repo ([graphify](https://github.com/Graphify-Labs/graphify)) |
+| `graphify`, `pyspark-antipattern` | Herramientas opcionales: grafo del repo ([graphify](https://github.com/Graphify-Labs/graphify)) y linter de PySpark ([pyspark-antipattern](https://github.com/skanderboudawara/pyspark-antipattern)) |
 
 Detalle, ejemplos y combinaciones por rol: **[guía de usuario](docs/guia-usuario.md#4-qué-hay-en-el-catálogo)**.
 
@@ -73,6 +83,6 @@ uv build             # genera dist/cuypilot-X.Y.Z-py3-none-any.whl
 
 - Contribuir: [`CONTRIBUTING.md`](CONTRIBUTING.md)
 - Cambios por versión: [`CHANGELOG.md`](CHANGELOG.md)
-- Contratos: [`RFC.md`](RFC.md) (RFC-001, base) · [`RFC-002`](docs/rfc/RFC-002-integraciones-terceros.md) (scripts y terceros) · [`RFC-003`](docs/rfc/RFC-003-contenido-dominio.md) (PySpark, ML, docs; borrador)
+- Contratos: [`RFC.md`](RFC.md) (RFC-001, base) · [`RFC-002`](docs/rfc/RFC-002-integraciones-terceros.md) (scripts y terceros) · [`RFC-003`](docs/rfc/RFC-003-contenido-dominio.md) (PySpark, ML, docs)
 - Investigación: [`docs/research/estado-del-arte.md`](docs/research/estado-del-arte.md)
 - Segundo cerebro: `luxitopp-vault/10-Projects/cuypilot/cuypilot.md` (ver [`PROJECT.md`](PROJECT.md))

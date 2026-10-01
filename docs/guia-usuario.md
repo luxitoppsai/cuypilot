@@ -13,7 +13,7 @@ a día y qué cambia en tu repositorio.
 5. [Combinaciones sugeridas por rol](#5-combinaciones-sugeridas-por-rol)
 6. [Referencia de comandos](#6-referencia-de-comandos)
 7. [Qué cambia en tu repositorio](#7-qué-cambia-en-tu-repositorio)
-8. [Herramientas externas: graphify](#8-herramientas-externas-graphify)
+8. [Herramientas externas (graphify, pyspark-antipattern)](#8-herramientas-externas)
 9. [Scripts dentro de las skills](#9-scripts-dentro-de-las-skills)
 10. [Actualizar cuypilot](#10-actualizar-cuypilot)
 11. [Solución de problemas](#11-solución-de-problemas)
@@ -29,7 +29,10 @@ a día y qué cambia en tu repositorio.
 | Python **3.11 o superior** | Ejecutar la CLI `cuypilot` y los scripts de las skills |
 | VS Code con **GitHub Copilot Chat** | Usar lo que instala cuypilot |
 | `uv` (recomendado) o `pip` | Instalar el wheel |
-| `uv` | Solo si vas a instalar la herramienta `graphify` |
+| `uv` | Solo si vas a instalar las herramientas `graphify` o `pyspark-antipattern` |
+| Java (JDK 17) | Solo para correr tests de PySpark en tu máquina (`pyspark-testing`) |
+
+Las skills de PySpark asumen **Databricks Runtime 15.4 LTS o superior** (Spark ≥3.5, Python ≥3.11).
 
 ## 2. Instalación
 
@@ -39,13 +42,13 @@ está disponible en `<ruta>`.
 **Con uv (recomendado):**
 
 ```bash
-uv add --dev <ruta>/cuypilot-0.2.0-py3-none-any.whl
+uv add --dev <ruta>/cuypilot-0.3.0-py3-none-any.whl
 ```
 
 **Con pip:** agrega la ruta del wheel a tu `requirements-dev.txt` e instálalo:
 
 ```bash
-pip install <ruta>/cuypilot-0.2.0-py3-none-any.whl
+pip install <ruta>/cuypilot-0.3.0-py3-none-any.whl
 ```
 
 Comprueba que quedó instalado:
@@ -62,19 +65,45 @@ cuypilot --version      # con uv: uv run cuypilot --version
 
 ## 3. Primeros pasos (5 minutos)
 
-Ejecuta todo **desde la raíz de tu repositorio**:
+Desde **la raíz de tu repositorio**, ejecuta el wizard:
 
 ```bash
-# 1. Mira qué hay disponible
-cuypilot list
+cuypilot init        # o simplemente `cuypilot` en un repo sin piezas instaladas
+```
 
-# 2. Instala lo que te sirva (los nombres salen de `cuypilot list`)
-cuypilot add python-standards python-design design-review sphinx-docstrings
+Verás el banner de cuypilot. El wizard te pregunta tu rol, te sugiere las piezas para ese rol, te ofrece
+las herramientas opcionales y las instala:
 
-# 3. Verifica
-cuypilot status
+```
+                          _ __      __
+  _______  ____  ______  (_) /___  / /_
+ / ___/ / / / / / / __ \/ / / __ \/ __/
+/ /__/ /_/ / /_/ / /_/ / / / /_/ / /_
+\___/\__,_/\__, / .___/_/_/\____/\__/
+          /____/_/  v0.3.0 · skills, agents y herramientas para GitHub Copilot
 
-# 4. Versiona lo instalado, así lo tiene todo el equipo
+  ¿Cuál es tu rol?
+    1) Desarrollador Python
+    2) Data scientist
+    3) ML engineer / data engineer (PySpark)
+    4) Documentación (técnica y funcional)
+    5) Elegir piezas a mano
+  >
+```
+
+Sin preguntas (por ejemplo, en un script): `cuypilot init --role mle --yes`.
+
+Si prefieres elegir pieza por pieza:
+
+```bash
+cuypilot list                                     # qué hay disponible
+cuypilot add python-standards pyspark-optimize    # instala lo que elijas
+cuypilot status                                   # verifica
+```
+
+En ambos casos, al terminar versiona lo instalado, así lo tiene todo el equipo:
+
+```bash
 git add .github .gitignore
 git commit -m "chore: copilot customizations via cuypilot"
 ```
@@ -111,6 +140,24 @@ distinta:
 | `docs-writer` | agent | Documenta un paquete completo (instala también `sphinx-docstrings`) | Selector de agentes → "documenta `src/scoring`" |
 | `improve-prompt` | skill (solo manual) | Convierte un pedido vago en un prompt completo, **sin ejecutarlo** | `/improve-prompt optimiza el job de ventas` |
 
+### PySpark, notebooks y ML
+
+| Pieza | Tipo | Para qué | Ejemplo de uso |
+|---|---|---|---|
+| `pyspark-optimize` | skill | Detecta y corrige anti-patrones de PySpark (UDFs, `collect`, `withColumn` en bucles…) **sin cambiar el resultado**, más guía para Databricks/Delta | "Este notebook es lento, optimízalo" |
+| `pyspark-testing` | skill | Tests de transformaciones con una `SparkSession` local y `assertDataFrameEqual` | "Escribe tests para `calcular_neto`" |
+| `notebook-to-module` | skill | Pasa la lógica de un notebook (`.py` o `.ipynb`) a un módulo testeable; el notebook queda como orquestador | "Modulariza `notebooks/ventas.py`" |
+| `ml-review` | skill | Revisa código de ML sin editarlo: fuga de datos, splits, semillas, métricas, MLflow (scikit-learn, XGBoost, LightGBM, Spark ML) | "Revisa `train.py`, el AUC me sale demasiado alto" |
+
+### Documentación con Sphinx
+
+| Pieza | Tipo | Para qué | Ejemplo de uso |
+|---|---|---|---|
+| `sphinx-setup` | skill | Crea o repara `docs/` con dos secciones: **técnica** (generada de los docstrings) y **funcional** (páginas para negocio); tema `furo` | "Configura Sphinx en este repo" |
+| `functional-docs` | skill | Documentación funcional en español de un pipeline o modelo (9 secciones); marca `[COMPLETAR]` lo que el código no dice | "Documenta para negocio el pipeline de clientes" |
+
+Para documentar un proyecto de cero: `sphinx-setup` → `sphinx-docstrings` (o el agente `docs-writer`) → `functional-docs`.
+
 ### Piezas de terceros (revisadas y con versión fijada)
 
 | Pieza | Origen | Para qué |
@@ -122,24 +169,28 @@ distinta:
 | `test-driven-development` | superpowers | TDD: test que falla → código mínimo → refactor |
 | `verification-before-completion` | superpowers | No dar algo por terminado sin ejecutar la verificación |
 | `spark-performance` | [awesome-copilot](https://github.com/github/awesome-copilot) | Agente ("PySpark Expert Agent") que diagnostica cuellos de botella de PySpark |
-| `graphify` | [graphify](https://github.com/Graphify-Labs/graphify) | Herramienta: grafo de conocimiento del repo (ver [§8](#8-herramientas-externas-graphify)) |
+| `graphify` | [graphify](https://github.com/Graphify-Labs/graphify) | Herramienta: grafo de conocimiento del repo (ver [§8](#8-herramientas-externas)) |
+| `pyspark-antipattern` | [pyspark-antipattern](https://github.com/skanderboudawara/pyspark-antipattern) | Herramienta: linter de PySpark con más de 60 reglas, que `pyspark-optimize` usa si está instalado |
 
 ## 5. Combinaciones sugeridas por rol
 
-Instala **solo lo que vayas a usar**. Si hay demasiadas skills, compiten entre sí y Copilot elige peor.
+Son las que ofrece `cuypilot init`. Instala **solo lo que vayas a usar**: si hay demasiadas skills,
+compiten entre sí y Copilot elige peor.
 
-| Rol | Sugerencia |
+| Rol | Piezas |
 |---|---|
-| Desarrollador Python | `python-standards python-design python-refactor design-review test-driven-development` |
-| Data scientist | `python-standards python-refactor sphinx-docstrings improve-prompt` |
-| ML / data engineer con PySpark | `python-standards python-refactor design-review spark-performance systematic-debugging` |
-| Documentar un paquete | `docs-writer` (trae `sphinx-docstrings`) |
-| Repo grande o desconocido | `graphify` |
+| Desarrollador Python (`dev`) | `python-standards python-design python-refactor design-review test-driven-development verification-before-completion` |
+| Data scientist (`ds`) | `python-standards python-refactor notebook-to-module ml-review sphinx-docstrings improve-prompt` |
+| ML engineer / data engineer (`mle`) | `python-standards design-review pyspark-optimize pyspark-testing notebook-to-module ml-review spark-performance` |
+| Documentación (`docs`) | `sphinx-setup sphinx-docstrings docs-writer functional-docs` |
+
+Herramientas opcionales para cualquier rol: `graphify` (repos grandes o desconocidos) y `pyspark-antipattern`.
 
 ## 6. Referencia de comandos
 
 | Comando | Qué hace |
 |---|---|
+| `cuypilot init [--role dev\|ds\|mle\|docs] [--yes]` | Wizard: elige tu rol e instala las piezas sugeridas |
 | `cuypilot list [--type skill\|agent\|instruction\|tool]` | Muestra el catálogo; `*` marca lo ya instalado en este repo |
 | `cuypilot add <nombre>... [--dry-run] [--yes] [--force]` | Instala piezas y sus dependencias |
 | `cuypilot status` | Estado de cada pieza instalada |
@@ -177,7 +228,9 @@ Estados que muestra `status`:
 - **Todo lo que está fuera del bloque gestionado en `copilot-instructions.md` es tuyo:** cuypilot no lo toca.
 - Al versionar `.github/`, tus compañeros reciben las mismas piezas **aunque no tengan cuypilot instalado**.
 
-## 8. Herramientas externas: graphify
+## 8. Herramientas externas
+
+### graphify
 
 `graphify` convierte el repositorio en un grafo de conocimiento que Copilot consulta en vez de leer
 archivo por archivo. Es útil en repos grandes o que no conoces.
@@ -209,6 +262,16 @@ graphify extract . --code-only
 comando quita la skill de **tu usuario**, así que graphify deja de estar disponible en todos tus
 proyectos. El programa `graphify` sigue instalado; para quitarlo del todo: `uv tool uninstall graphifyy`.
 
+### pyspark-antipattern
+
+Linter de PySpark (más de 60 reglas) que complementa al script de `pyspark-optimize`. Solo se usa desde
+la terminal, así que no hay que conectarlo a VS Code:
+
+```bash
+cuypilot add pyspark-antipattern                   # uv tool install pyspark-antipattern==<versión>
+pyspark-antipattern check src/                     # también puedes usarlo tú directamente
+```
+
 ## 9. Scripts dentro de las skills
 
 Algunas skills traen **scripts** que hacen el análisis repetitivo sin gastar tokens del LLM. Copilot los
@@ -223,6 +286,15 @@ python .github/skills/design-review/scripts/code_metrics.py src/
 
 # Resumen del proyecto en ~20 líneas
 python .github/skills/improve-prompt/scripts/workspace_context.py .
+
+# Anti-patrones de PySpark (módulos, notebooks .py de Databricks e .ipynb)
+python .github/skills/pyspark-optimize/scripts/spark_lint.py src/ notebooks/
+
+# Estructura de un notebook, celda por celda (para modularizarlo)
+python .github/skills/notebook-to-module/scripts/notebook_outline.py notebooks/ventas.py
+
+# Tablas leídas/escritas, parámetros y columnas nuevas (para la documentación funcional)
+python .github/skills/functional-docs/scripts/data_flow.py src/pipeline/
 ```
 
 Todos son **solo lectura**, usan solo la librería estándar de Python y no acceden a la red. Aceptan
@@ -251,6 +323,9 @@ Los cambios de cada versión están en el [`CHANGELOG.md`](../CHANGELOG.md).
 | `Estos archivos ya existen y no son de cuypilot` | Ya tenías un archivo con ese nombre. Revísalo; si quieres reemplazarlo, `--force` |
 | `` `X` depende de Y `` al hacer `remove` | Quita también la pieza que depende (por ejemplo `remove docs-writer sphinx-docstrings`) |
 | La red bloquea la instalación de graphify | `cuypilot add graphify --dry-run` muestra los comandos; ejecútalos por la vía que tengas disponible y luego repite `cuypilot add graphify` |
+| Los tests de PySpark fallan con "Java gateway process exited" o "Unable to locate a Java Runtime" | Instala un JDK 17 (por ejemplo Temurin) y vuelve a correr `pytest` |
+| El proyecto usa `databricks-connect` y no hay `SparkSession` local | `databricks-connect` reemplaza a `pyspark` y no tiene motor local: corre los tests unitarios en un entorno con `pyspark==3.5.*` (ver `pyspark-testing`) |
+| `sphinx-build -W` falla por un docstring | El mensaje indica el archivo y la línea; corrige el formato reST (o usa `sphinx-docstrings`) |
 | `graphify: command not found` tras instalarlo | Ejecuta `uv tool update-shell` y abre una terminal nueva |
 | Aviso "este directorio no es la raíz de un repo git" | Ejecuta cuypilot desde la raíz del repositorio |
 
