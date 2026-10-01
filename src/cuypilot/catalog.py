@@ -102,6 +102,15 @@ def load_catalog(root: Path = CATALOG_DIR) -> dict[str, Item]:
     }
 
 
+def load_roles(root: Path = CATALOG_DIR) -> dict[str, dict]:
+    """Carga las combinaciones sugeridas por rol (``[roles]`` de ``catalog.toml``).
+
+    :param root: Carpeta raíz del catálogo.
+    :returns: Rol → ``{"label": str, "items": list[str]}``.
+    """
+    return tomllib.loads((root / "catalog.toml").read_text(encoding="utf-8")).get("roles", {})
+
+
 def resolve(catalog: dict[str, Item], names: list[str]) -> list[Item]:
     """Expande ``names`` con sus dependencias (``requires``), dependencias primero.
 

@@ -130,3 +130,15 @@ def test_tool_is_well_formed(tool):
     assert any(tool.version in arg for cmd in tool.install for arg in cmd), (
         "install debe fijar la versión aprobada"
     )
+
+
+def test_roles_reference_existing_pieces():
+    from cuypilot.catalog import load_roles
+
+    roles = load_roles()
+    assert roles, "catalog.toml debe definir [roles]"
+    for name, role in roles.items():
+        assert role["label"] and role["items"], name
+        for item in role["items"]:
+            assert item in CATALOG, f"rol {name}: {item} no existe"
+            assert not isinstance(CATALOG[item], Tool), f"rol {name}: las herramientas se ofrecen aparte"

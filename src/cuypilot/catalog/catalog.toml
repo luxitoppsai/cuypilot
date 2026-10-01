@@ -172,3 +172,21 @@ description = "Linter externo de PySpark (60+ reglas, Rust) que complementa a sp
 license = "MIT"
 install = [["uv", "tool", "install", "pyspark-antipattern==0.4.1"]]
 check = ["pyspark-antipattern", "--version"]
+
+# --- Combinaciones sugeridas por rol (las usa `cuypilot init`) ---
+
+[roles.dev]
+label = "Desarrollador Python"
+items = ["python-standards", "python-design", "python-refactor", "design-review", "test-driven-development", "verification-before-completion"]
+
+[roles.ds]
+label = "Data scientist"
+items = ["python-standards", "python-refactor", "notebook-to-module", "ml-review", "sphinx-docstrings", "improve-prompt"]
+
+[roles.mle]
+label = "ML engineer / data engineer (PySpark)"
+items = ["python-standards", "design-review", "pyspark-optimize", "pyspark-testing", "notebook-to-module", "ml-review", "spark-performance"]
+
+[roles.docs]
+label = "Documentación (técnica y funcional)"
+items = ["sphinx-setup", "sphinx-docstrings", "docs-writer", "functional-docs"]

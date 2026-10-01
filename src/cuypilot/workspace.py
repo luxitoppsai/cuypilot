@@ -15,8 +15,9 @@ from cuypilot.catalog import CATALOG_DIR, Item, Tool, resolve
 LOCK_PATH = ".github/cuypilot.lock.json"
 INSTRUCTIONS_PATH = ".github/copilot-instructions.md"
 START, END = "<!-- cuypilot:start -->", "<!-- cuypilot:end -->"
-#: El marcador de inicio va en la misma línea que un encabezado H2: otras herramientas (p. ej. graphify)
-#: consideran que su sección termina en el siguiente encabezado ``##``; así nunca se llevan el marcador consigo.
+#: El marcador de inicio va en la misma línea que un encabezado H2: otras herramientas (p. ej.
+#: graphify) consideran que su sección termina en el siguiente encabezado ``##``; así nunca se
+#: llevan el marcador consigo.
 HEADING = "## Team conventions (managed by cuypilot — edit outside this block)"
 _BLOCK = re.compile(rf"(?:^##[^\n]*?)?{re.escape(START)}.*?{re.escape(END)}", re.DOTALL | re.MULTILINE)
 

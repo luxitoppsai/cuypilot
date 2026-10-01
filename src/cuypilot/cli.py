@@ -7,7 +7,8 @@ import sys
 from importlib.metadata import version as pkg_version
 from pathlib import Path
 
-from cuypilot.catalog import PATHS, load_catalog
+from cuypilot.catalog import PATHS, load_catalog, load_roles
+from cuypilot.wizard import banner, run_wizard
 from cuypilot.workspace import Command, CuypilotError, Report, Workspace
 
 
@@ -71,8 +72,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="cuypilot", description="Instala skills, agents e instructions de Copilot en este workspace."
     )
-    parser.add_argument("--version", action="version", version=f"cuypilot {pkg_version('cuypilot')}")
-    sub = parser.add_subparsers(dest="command", required=True)
+    parser.add_argument("--version", action="version", version=banner(pkg_version("cuypilot")))
+    sub = parser.add_subparsers(dest="command")
+
+    p = sub.add_parser("init", help="Wizard: elige tu rol e instala las piezas sugeridas.")
+    p.add_argument("--role", help="Rol a usar sin preguntar (dev, ds, mle, docs).")
+    p.add_argument(
+        "--yes", "-y", action="store_true", help="No preguntar (requiere --role; sin herramientas)."
+    )
+    p.set_defaults(func=None)
 
     p = sub.add_parser("list", help="Muestra el catálogo disponible.")
     p.add_argument("--type", choices=[*sorted(PATHS), "tool"])
@@ -107,16 +115,33 @@ def main(argv: list[str] | None = None) -> int:
     :param argv: Argumentos (por defecto, ``sys.argv[1:]``).
     :returns: Código de salida.
     """
-    args = build_parser().parse_args(argv)
+    parser = build_parser()
+    args = parser.parse_args(argv)
     root = Path.cwd()
     if not (root / ".git").exists() and args.command in ("add", "update", "remove"):
         print("Aviso: este directorio no es la raíz de un repo git.", file=sys.stderr)
     confirm = (lambda commands: True) if getattr(args, "yes", False) else _ask
     ws = Workspace(root, load_catalog(), pkg_version("cuypilot"), confirm=confirm)
+    if args.command is None and ws.lock:
+        parser.print_help()
+        return 0
     try:
+        if args.command in (None, "init"):
+            if getattr(args, "yes", False) and not args.role:
+                raise CuypilotError("--yes requiere --role (dev, ds, mle o docs).")
+            return run_wizard(
+                ws,
+                load_roles(),
+                pkg_version("cuypilot"),
+                getattr(args, "role", None),
+                getattr(args, "yes", False),
+            )
         args.func(ws, args)
     except CuypilotError as exc:
         print(f"Error: {exc}", file=sys.stderr)
+        return 1
+    except (EOFError, KeyboardInterrupt):
+        print("\nCancelado; no se cambió nada más.", file=sys.stderr)
         return 1
     return 0
 
