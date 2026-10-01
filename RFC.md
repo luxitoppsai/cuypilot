@@ -45,20 +45,20 @@ RFCs posteriores.
 ## 3. Alcance
 
 **Dentro:**
-- Estructura del repo y formato del catálogo (`catalog.json`).
+- Estructura del repo y formato del catálogo (`catalog.toml`).
 - CLI con `list`, `add`, `remove`, `status`, `update`.
 - Lockfile en el proyecto consumidor y detección de ediciones locales.
 - Bloque gestionado en `.github/copilot-instructions.md` (instrucción base: responder en el idioma del usuario).
 - Validación del catálogo con pytest, que el CI ejecuta.
-- Gobernanza: CODEOWNERS, plantilla de PR con checklist de seguridad, `CONTRIBUTING.md` (en español),
-  CHANGELOG y reglas de semver.
+- Gobernanza: `CODEOWNERS` (vacío en la v1), plantilla de PR con checklist (seguridad, evals, versión),
+  `CONTRIBUTING.md` (en español), CHANGELOG y reglas de semver.
 - Formato de evals por skill (casos declarados y ejecución manual en la v1).
-- **Piloto mínimo** para probar el circuito completo: 1 skill (`sphinx-docstrings`), 1 instruction
-  (`python-standards`, `applyTo: **/*.py`) y 1 agent (`docs-writer`).
+- **Contenido inicial: principios de programación** (también sirve para probar el circuito completo con
+  los tres tipos de pieza). Detalle en 4.10.
 - Build del wheel (`uv build`) y distribución manual a una ruta compartida.
 
 **Fuera (no-objetivos):**
-- Contenido de dominio más allá del piloto (refactor, optimización PySpark/Databricks, ML, doc funcional).
+- Contenido de dominio más allá del contenido inicial (optimización PySpark/Databricks, ML, doc funcional).
 - Publicación en Artifactory (cuando esté listo será solo un paso extra de publicación; no cambia el diseño).
 - Marketplace de Agent Plugins, Copilot CLI, agente en la nube, Claude Code.
 - Hooks y MCP (no aparecen en el catálogo de la v1).
@@ -76,7 +76,7 @@ cuypilot/
     __init__.py
     cli.py                 # argparse (stdlib), sin dependencias de runtime
     catalog/               # se empaqueta como package data dentro del wheel
-      catalog.json         # registro: fuente de verdad de metadatos
+      catalog.toml         # registro: fuente de verdad de metadatos
       base/copilot-instructions.md
       skills/<name>/SKILL.md (+ recursos)
       agents/<name>.agent.md
@@ -91,31 +91,29 @@ cuypilot/
 ```
 
 Los archivos del catálogo usan **solo el frontmatter estándar** de VS Code. Versión, dueño y
-dependencias viven en `catalog.json`, para no meter claves que VS Code no reconoce.
+dependencias viven en `catalog.toml`, para no meter claves que VS Code no reconoce.
 
-### 4.2 `catalog.json`
+### 4.2 `catalog.toml`
 
-```json
-{
-  "items": {
-    "sphinx-docstrings": {
-      "type": "skill",
-      "version": "1.0.0",
-      "owner": "@luis",
-      "description": "Escribe/corrige docstrings Sphinx (reST) en código Python.",
-      "requires": []
-    },
-    "docs-writer": {
-      "type": "agent", "version": "0.1.0", "owner": "@luis",
-      "description": "...", "requires": ["sphinx-docstrings"]
-    }
-  }
-}
+```toml
+[items.sphinx-docstrings]
+type = "skill"
+version = "1.0.0"
+owner = ""            # opcional; vacío en la v1
+description = "Escribe/corrige docstrings Sphinx (reST) en código Python."
+requires = []
+
+[items.docs-writer]
+type = "agent"
+version = "0.1.0"
+description = "..."
+requires = ["sphinx-docstrings"]
 ```
 
 - `type` ∈ {`skill`, `agent`, `instruction`}.
 - `requires`: dependencias entre piezas. `add` las instala junto con la pieza pedida, sin resolución de versiones.
-- Se usa JSON (no TOML ni YAML) para que la CLI funcione con Python ≥3.10 y solo con la stdlib.
+- TOML porque se edita a mano (admite comentarios) y Python ≥3.11 lo lee con `tomllib` (stdlib). El
+  lockfile sí es JSON, porque la CLI lo escribe y `tomllib` solo lee.
 
 ### 4.3 Dónde instala la CLI (en el workspace consumidor)
 
@@ -162,13 +160,13 @@ Se trabaja sobre el directorio actual. Si no hay `.git`, se avisa, pero no se bl
   - MAJOR: se quita o renombra una pieza, o hay un cambio incompatible en la CLI o el lockfile.
   - MINOR: pieza nueva o comando nuevo.
   - PATCH: correcciones.
-- **Pieza:** su `version` en `catalog.json` se sube cuando cambia su contenido. El CI lo verifica
-  comparando contra el último tag (ver preguntas abiertas, punto 3).
+- **Pieza:** su `version` en `catalog.toml` se sube cuando cambia su contenido. Se controla con el
+  checklist del PR (sin verificación automática en la v1).
 - `CHANGELOG.md` por release, con secciones por pieza.
 
 ### 4.7 Validación (pytest, la corre el CI)
 
-- Cada pieza de `catalog.json` tiene sus archivos, y no hay archivos sin registrar.
+- Cada pieza de `catalog.toml` tiene sus archivos, y no hay archivos sin registrar.
 - `name` de la skill = nombre de la carpeta, cumple `^[a-z0-9-]{1,64}$` y `description` tiene ≤1024 caracteres.
 - Frontmatter mínimo por tipo: skill (`name`, `description`), agent (`description`), instruction (`applyTo`).
 - `requires` apunta a piezas existentes y no tiene ciclos.
@@ -184,7 +182,8 @@ marca en el checklist. Automatizarlas queda para otra RFC.
 
 ### 4.9 Gobernanza
 
-- `CODEOWNERS`: cada carpeta del catálogo tiene dueño, y el autor no se aprueba a sí mismo.
+- `CODEOWNERS`: el archivo existe pero queda **vacío en la v1**. Cuando haya más contribuyentes, cada
+  carpeta del catálogo tendrá dueño y el autor no podrá aprobarse a sí mismo.
 - Plantilla de PR con checklist: seguridad (scripts, red, credenciales, instrucciones adversariales,
   rutas), evals ejecutadas, versión subida y CHANGELOG actualizado.
 - Idioma:
@@ -192,14 +191,32 @@ marca en el checklist. Automatizarlas queda para otra RFC.
   - Documentación para personas: **español**.
   - La instrucción base indica responder en el idioma del usuario.
 
-### 4.10 Instalación por parte de los usuarios
+### 4.10 Contenido inicial: principios de programación
+
+Los criterios de trabajo (OOP con criterio, SOLID, KISS, YAGNI, patrones de diseño, robustez en los
+bordes, nombres claros, docstrings Sphinx) pasan a ser piezas. Se separan por **momento de uso**
+(crear / cambiar / evaluar) para que las descripciones no compitan entre sí al activarse:
+
+| Pieza | Tipo | Cuándo actúa | Contenido |
+|---|---|---|---|
+| `python-standards` | instruction (`applyTo: **/*.py`) | Siempre, al tocar `.py` | Versión corta y directiva: KISS, YAGNI, OOP solo cuando hay estado + comportamiento, funciones puras para lógica simple, validar solo en los bordes (sin `try/except` defensivos), nombres claros, funciones cortas, docstrings Sphinx en lo público. |
+| `python-design` | skill | **Diseñar** código nuevo (módulo, clase, API) | ¿Función o clase? ¿Hace falta una abstracción? SOLID como guía; patrones de diseño **solo si resuelven un problema presente**, prefiriendo alternativas pythónicas (funciones de primera clase, `dataclass`, `Protocol`, módulos) antes que las jerarquías GoF. Incluye un catálogo breve de patrones con "úsalo cuando / no lo uses cuando". |
+| `python-refactor` | skill | **Cambiar** código existente | Refactor que preserva el comportamiento: asegurar tests antes, pasos pequeños, eliminar código muerto y abstracciones especulativas, aplanar jerarquías innecesarias, extraer funciones. Prioridad: borrar antes que agregar. |
+| `design-review` | skill | **Evaluar** código sin modificarlo | Revisión contra los principios: sobreingeniería (qué borrar), violaciones de SOLID, acoplamiento, defensas innecesarias. Devuelve hallazgos priorizados; no edita. |
+| `sphinx-docstrings` | skill | Documentar API Python | Docstrings reST (`:param:`, `:returns:`, `:raises:`) en módulos, clases y funciones públicas. |
+| `docs-writer` | agent | Documentación técnica de un paquete | Usa `sphinx-docstrings` (`requires`); prueba el camino agent + dependencias. |
+
+Las evals de estas piezas incluyen **casos de coexistencia** entre `python-design`, `python-refactor` y
+`design-review`. Por ejemplo, "revisa este módulo" debe activar `design-review` y no `python-refactor`.
+
+### 4.11 Instalación por parte de los usuarios
 
 ```bash
 # mientras se configura Artifactory: wheel en ruta compartida
-uv add --dev /ruta/compartida/cuypilot-0.1.0-py3-none-any.whl
-# o: pip install /ruta/compartida/cuypilot-0.1.0-py3-none-any.whl  (en requirements-dev.txt)
+uv add --dev <ruta>/cuypilot-0.1.0-py3-none-any.whl
+# o: pip install <ruta>/cuypilot-0.1.0-py3-none-any.whl  (en requirements-dev.txt)
 cuypilot list
-cuypilot add sphinx-docstrings python-standards
+cuypilot add python-standards python-design design-review
 git add .github && git commit -m "chore: add copilot customizations via cuypilot"
 ```
 
@@ -228,33 +245,36 @@ dependencia de ningún framework de LLM.
 | Ediciones locales que se pierden al actualizar | Hashes en el lockfile y `update` que no pisa sin `--force`. |
 | Demasiadas skills instaladas, que se estorban al activarse | Instalación selectiva; las evals de coexistencia van en la RFC de contenido. |
 | Pieza maliciosa o con secretos | Validación en CI, checklist de seguridad, CODEOWNERS y separación de funciones. |
-| Python antiguo en algunos entornos | Python ≥3.10 y solo stdlib en runtime. |
+| Python antiguo en algunos entornos | Python ≥3.11 como mínimo (decidido) y solo stdlib en runtime. |
 | Distribución manual del wheel (ruta compartida) | Temporal: Artifactory se suma sin cambiar el diseño. |
 
 ## 8. Plan de entrega
 
-1. Estructura del repo, `catalog.json` y tests de validación del catálogo.
+1. Estructura del repo, `catalog.toml` y tests de validación del catálogo.
 2. CLI: `list` → `add` (con lockfile y bloque base) → `status` → `update` → `remove`. Tests sobre directorios temporales.
-3. Piloto: `sphinx-docstrings`, `python-standards`, `docs-writer`, con sus evals.
-4. Gobernanza: CODEOWNERS, plantilla de PR, CONTRIBUTING, CHANGELOG y workflow de CI.
+3. Contenido inicial (4.10): `python-standards`, `python-design`, `python-refactor`, `design-review`, `sphinx-docstrings`, `docs-writer`, con sus evals.
+4. Gobernanza: CODEOWNERS (vacío), plantilla de PR, CONTRIBUTING, CHANGELOG y workflow de CI.
 5. `uv build` → `v0.1.0` → instalar el wheel en un proyecto real y probarlo en VS Code (**MVP demostrable**).
 
 ## 9. Criterios de aceptación
 
-- [ ] `uv build` genera un wheel que incluye el catálogo, y el wheel se instala en un venv limpio con Python 3.10.
+- [ ] `uv build` genera un wheel que incluye el catálogo, y el wheel se instala en un venv limpio con Python 3.11.
 - [ ] `cuypilot add sphinx-docstrings` crea `.github/skills/sphinx-docstrings/SKILL.md` y el lockfile; la skill aparece como `/sphinx-docstrings` en Copilot Chat de VS Code.
 - [ ] `cuypilot add docs-writer` instala también `sphinx-docstrings` (`requires`), y el agente aparece en el selector.
 - [ ] `python-standards` se aplica al editar un `.py` (visible en las referencias de la respuesta).
 - [ ] Al editar a mano un archivo instalado, `status` lo marca `modificada` y `update` no lo pisa sin `--force`.
 - [ ] `remove` deja el workspace sin rastros de la pieza, salvo el bloque base si quedan otras piezas.
 - [ ] El contenido de `copilot-instructions.md` fuera del bloque gestionado nunca se modifica.
+- [ ] Las evals de coexistencia de `python-design` / `python-refactor` / `design-review` pasan (ejecución manual).
 - [ ] El CI falla ante: frontmatter inválido, nombre ≠ carpeta, `requires` roto, pieza sin evals o pieza no registrada.
 - [ ] Docstrings Sphinx en el código público; `ruff` limpio; tests verdes.
 
 ## 10. Preguntas abiertas
 
-1. **Versión mínima de Python:** ¿3.10 alcanza para todos los entornos de desarrollo del equipo?
-2. **Dueños:** ¿quiénes van en CODEOWNERS (usuarios o equipos de GHE)? En la v1, ¿solo tú?
-3. **Verificar que se subió la versión de una pieza:** ¿entra en la v1 (el CI compara el contenido contra el último tag) o basta con el checklist del PR?
-4. **Ruta compartida del wheel:** ¿dónde (share de red, SharePoint, release de GHE)? Afecta solo al README.
-5. **Piloto:** ¿te sirven `sphinx-docstrings` / `python-standards` / `docs-writer`, o prefieres otra combinación?
+Ninguna bloqueante. Decisiones cerradas el 2026-09-30:
+
+1. Python **≥3.11** como mínimo → el catálogo pasa a TOML (`tomllib`).
+2. `CODEOWNERS` vacío en la v1.
+3. La subida de versión de una pieza se controla con el checklist del PR, sin verificación en el CI.
+4. Ruta del wheel: `<ruta>` en el README; la completa Luis.
+5. Contenido inicial: piezas de principios de programación (4.10) + `sphinx-docstrings` + `docs-writer`.
