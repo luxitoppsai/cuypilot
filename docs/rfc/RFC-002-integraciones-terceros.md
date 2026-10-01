@@ -2,7 +2,7 @@
 type: rfc
 proyecto: "cuypilot"
 rfc: RFC-002
-estado: borrador   # borrador | en-revision | aceptado | rechazado | superado
+estado: aceptado   # borrador | en-revision | aceptado | rechazado | superado
 fecha: 2026-09-30
 tags: [rfc, contrato, terceros, scripts]
 ---
@@ -32,7 +32,7 @@ Investigación del 2026-09-30 (estrellas y licencia consultadas con la API de Gi
 | [obra/superpowers](https://github.com/obra/superpowers) | 294k | MIT | **Entran 3 skills** copiadas al catálogo |
 | [github/awesome-copilot](https://github.com/github/awesome-copilot) | 40k | MIT | **Entra** el agente `spark-performance`, copiado al catálogo |
 | [anthropics/skills](https://github.com/anthropics/skills) | 179k | Mixta | **Entra** `skill-creator` (para quienes contribuyen), si su licencia lo permite |
-| [databricks/databricks-agent-skills](https://github.com/databricks/databricks-agent-skills) | oficial | Databricks License | **Entra un subconjunto curado**, copiado al catálogo (§4.4) |
+| [databricks/databricks-agent-skills](https://github.com/databricks/databricks-agent-skills) | oficial | Databricks License | **Fuera** (decidido el 2026-09-30: enseñan a operar la plataforma, no aportan al trabajo de código del equipo; ver §4.4) |
 
 ## 2. Objetivo
 
@@ -45,7 +45,7 @@ Investigación del 2026-09-30 (estrellas y licencia consultadas con la API de Gi
 
 **Hecho =**
 - `cuypilot add sphinx-docstrings` trae su script, y Copilot lo usa para encontrar qué documentar.
-- `cuypilot add ponytail databricks-jobs graphify` deja todo funcionando en VS Code.
+- `cuypilot add ponytail graphify` deja todo funcionando en VS Code.
 - `cuypilot status` informa el estado de todo lo instalado.
 
 ## 3. Alcance
@@ -54,11 +54,10 @@ Investigación del 2026-09-30 (estrellas y licencia consultadas con la API de Gi
 - Reglas, tests y validación para scripts dentro de las skills, y los 3 primeros scripts (§4.1).
 - Metadatos `upstream` y validación de licencias (§4.2).
 - Tipo `tool` en la CLI (§4.3) y `graphify` como primera herramienta.
-- Piezas de terceros: ponytail (sin `-review`), 3 de superpowers, `spark-performance`, `skill-creator` y el
-  subconjunto de Databricks (§4.4).
+- Piezas de terceros: ponytail (sin `-review`), 3 de superpowers, `spark-performance` y `skill-creator` (§4.5).
 
 **Fuera (no-objetivos):**
-- codegraph y `ponytail-review` (decidido).
+- codegraph, `ponytail-review` y las skills de Databricks (decidido).
 - Hooks de terceros (ejecución arbitraria de código, Node).
 - Skills de `anthropics/skills` con licencia propietaria (docx, xlsx, pdf, pptx).
 - Sincronización automática con los repos originales: cada actualización entra por PR.
@@ -110,13 +109,11 @@ license = "MIT"
 adapted = false                     # true si se ajustó para Copilot (se describe en el PR)
 ```
 
-- La carpeta de la pieza incluye el `LICENSE` original, porque MIT, Apache y la Databricks License
-  exigen conservar el aviso.
+- La carpeta de la pieza incluye el `LICENSE` original, porque MIT y Apache exigen conservar el aviso.
 - El CI valida:
   - `upstream` completo;
   - LICENSE presente;
-  - licencia dentro de la lista permitida: `MIT`, `Apache-2.0`, `BSD-2-Clause`, `BSD-3-Clause` y
-    `Databricks` (esta última, solo para piezas de Databricks).
+  - licencia dentro de la lista permitida: `MIT`, `Apache-2.0`, `BSD-2-Clause`, `BSD-3-Clause`.
 - **Adaptación mínima:** algunas skills mencionan herramientas que solo existen en Claude Code (por
   ejemplo `TodoWrite` o subagentes `Task`). Se ajustan lo indispensable, con `adapted = true`.
 - **Actualizar desde el original:** un PR que cambia `ref`, con el diff a la vista y el checklist de seguridad.
@@ -154,32 +151,13 @@ gitignore = ["graphify-out/", "graph.json"]
   el pase semántico sobre documentos envía su contenido a un LLM, y elige el proveedor según la API key
   que encuentre en el entorno.
 
-### 4.4 Skills de Databricks: evaluación y subconjunto
+### 4.4 Skills de Databricks: descartadas
 
-Su licencia permite usarlas, modificarlas y redistribuirlas **solo para trabajar con los servicios de
-Databricks**, incluyendo la licencia y los avisos. Eso encaja con este caso (todo el equipo trabaja
-sobre Databricks). El instalador oficial (`databricks aitools install`) instala en carpetas de usuario
-(`~/.copilot/skills`), sin elección por proyecto y sin versión fijada, por eso se **copian al catálogo**
-con `upstream`.
-
-Ninguna mira código con `mcp__` ni herramientas exclusivas de Claude. Todas operan con la **CLI y el SDK
-de Databricks**. Evaluación de las 31 para devs, DS y MLE con PySpark:
-
-| Nivel | Skills | Por qué |
-|---|---|---|
-| **A — trabajo diario (propuesta para entrar)** | `databricks-core` (requerida por las demás: auth, perfiles, bundles), `databricks-dabs`, `databricks-jobs`, `databricks-python-sdk`, `databricks-setup-local`, `databricks-execution-compute`, `databricks-ml-training`, `databricks-model-serving` | Desarrollo local con Databricks Connect, despliegue de jobs con bundles, entrenamiento y serving de modelos |
-| **B — según el equipo (elegir)** | `databricks-pipelines` (Lakeflow/DLT), `databricks-spark-structured-streaming`, `databricks-unity-catalog`, `databricks-mlflow-evaluation` (GenAI), `databricks-serverless-migration`, `databricks-dbsql`, `databricks-vector-search`, `databricks-ai-functions`, `databricks-docs` (consulta docs en internet) | Útiles si el equipo usa ese producto |
-| **C — fuera** | apps, app-design, apps-python, aibi-dashboards, agent-bricks, genie-agents, data-discovery, metric-views, lakebase, lakeflow-connect, zerobus-ingest, iceberg, synthetic-data-gen, unstructured-pdf-generation | Productos ajenos al trabajo de DS, MLE o DE con PySpark |
-
-**Qué aportan y qué no:** enseñan a **operar la plataforma** (CLI, bundles, jobs, serving). **No
-cubren** la calidad ni la optimización del código PySpark; eso sigue siendo trabajo nuestro (RFC de
-dominio + `spark-performance`).
-
-**Riesgo:** estas skills hacen que el agente ejecute comandos `databricks` reales con las credenciales del
-desarrollador: despliegues, clusters y, en Unity Catalog, `GRANT`/`REVOKE`. La guía de instalación debe
-recomendar:
-- **no** autoaprobar comandos `databricks` en la terminal de VS Code;
-- usar un perfil apuntando a un workspace de desarrollo.
+Se evaluaron las 31 skills oficiales (2026-09-30). Su licencia permitía copiarlas, pero se descartan.
+Enseñan a **operar la plataforma** (CLI, bundles, jobs, serving, apps) y no aportan a la calidad ni a la
+optimización del código PySpark, que es el foco de cuypilot. Además, harían que el agente ejecute
+comandos `databricks` reales con las credenciales del desarrollador. Se puede reconsiderar si aparece una
+necesidad concreta.
 
 ### 4.5 Resto de piezas de terceros
 
@@ -194,8 +172,7 @@ recomendar:
 
 | Alternativa | Por qué no |
 |---|---|
-| Marketplaces originales (ponytail, superpowers, Databricks) | Mismas razones de ADR-001: instalación por persona, sin versión en el repo, red externa |
-| `databricks aitools install` | Instala en carpetas de usuario, sin elegir por proyecto ni fijar versión |
+| Marketplaces originales (ponytail, superpowers) | Mismas razones de ADR-001: instalación por persona, sin versión en el repo, red externa |
 | Descargar del repo original al instalar | Depende de GitHub.com y no garantiza que lo instalado sea lo revisado |
 | Que el LLM haga los análisis deterministas leyendo el código | Más tokens, más lento y menos fiable que un script de AST |
 | Usar herramientas externas para las métricas (radon, interrogate, pydocstyle) | Agregan dependencias al proyecto del usuario; con `ast` de la stdlib alcanza para lo que necesitamos |
@@ -212,14 +189,13 @@ No. Todo sigue siendo determinista: se copian archivos, se ejecutan comandos apr
 | Licencias | Lista permitida en el CI, LICENSE copiado y `upstream.license` obligatorio |
 | Una pieza de terceros cambia de forma maliciosa | `ref` fijado a un commit; cada actualización es un PR revisado |
 | Scripts con efectos laterales | Solo lectura, solo stdlib, sin red, con tests; el CI los marca para revisión manual |
-| Comandos `databricks` contra producción | Recomendación de perfil de desarrollo y de no autoaprobar comandos |
 | La red bloquea una instalación | `--dry-run` y resolverlo caso por caso; Artifactory más adelante |
 
 ## 8. Plan de entrega
 
 1. Scripts: `docstring_audit.py`, `code_metrics.py`, `workspace_context.py` + tests + actualizar sus `SKILL.md` (sube a MINOR la versión de cada pieza).
 2. `upstream` + validación de licencias en el CI.
-3. Copiar al catálogo ponytail, superpowers (3), `spark-performance`, `skill-creator` y Databricks nivel A (+ lo que se elija del nivel B), con evals.
+3. Copiar al catálogo ponytail, superpowers (3), `spark-performance` y `skill-creator`, con evals.
 4. Tipo `tool` en la CLI (`add`/`status`/`remove`, `--yes`, `--dry-run`) + tests con comandos simulados.
 5. `graphify` + la regla `--code-only` en el bloque base.
 6. README (combinaciones sugeridas por rol), CHANGELOG y `v0.2.0`.
@@ -229,12 +205,16 @@ No. Todo sigue siendo determinista: se copian archivos, se ejecutan comandos apr
 - [ ] `cuypilot add sphinx-docstrings` instala también `scripts/docstring_audit.py`, y en VS Code Copilot lo ejecuta antes de documentar.
 - [ ] Los 3 scripts tienen tests, son solo stdlib y no escriben archivos.
 - [ ] El CI falla si una pieza de terceros no tiene `upstream`, no tiene LICENSE o su licencia no está permitida.
-- [ ] `cuypilot add ponytail-audit databricks-jobs` instala ambas con su LICENSE (`databricks-jobs` trae `databricks-core` por `requires`).
+- [ ] `cuypilot add ponytail-audit` instala la skill con su LICENSE.
 - [ ] `cuypilot add graphify --dry-run` no ejecuta nada; `cuypilot add graphify` pide confirmación y deja graphify utilizable en Copilot Chat.
 - [ ] `cuypilot status` muestra las herramientas con su versión instalada y la aprobada.
 - [ ] Los comandos de las herramientas se ejecutan sin shell y solo si vienen del catálogo.
 
 ## 10. Preguntas abiertas
 
-1. **Databricks nivel B:** ¿cuáles usa el equipo? En particular, ¿Lakeflow pipelines (DLT), streaming, Unity Catalog?
-2. **¿Te parecen bien los 3 scripts iniciales**, o hay otro análisis determinista que te ahorraría más tokens en el día a día?
+Ninguna bloqueante. Decisiones cerradas el 2026-09-30:
+
+1. Solo graphify (sin codegraph); sin `ponytail-review`; la CLI ejecuta los instaladores con confirmación.
+2. Skills de Databricks descartadas (§4.4).
+3. Los 3 scripts iniciales aprobados.
+4. Se verifican durante la implementación: licencia de `skill-creator`, la lista de skills de ponytail, menciones a herramientas exclusivas de Claude en superpowers, la calidad de `spark-performance` y los comandos actuales de graphify. Si alguna no cumple, queda fuera y se anota aquí.
