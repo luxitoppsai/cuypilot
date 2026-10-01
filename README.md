@@ -57,6 +57,6 @@ uv build             # genera dist/cuypilot-X.Y.Z-py3-none-any.whl
 ```
 
 - Contribuir: [`CONTRIBUTING.md`](CONTRIBUTING.md)
-- Contrato: [`RFC.md`](RFC.md) (RFC-001, aceptado)
+- Contratos: [`RFC.md`](RFC.md) (RFC-001 base, aceptado) · [`docs/rfc/RFC-002-integraciones-terceros.md`](docs/rfc/RFC-002-integraciones-terceros.md) (borrador)
 - Investigación: [`docs/research/estado-del-arte.md`](docs/research/estado-del-arte.md)
 - Segundo cerebro: `luxitopp-vault/10-Projects/cuypilot/cuypilot.md` (ver [`PROJECT.md`](PROJECT.md))
