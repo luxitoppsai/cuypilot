@@ -1,6 +1,6 @@
-# <Nombre del proyecto>
+# [Nombre del proyecto]
 
-<Una o dos frases: qué es el proyecto y para quién.>
+[Una o dos frases: qué es el proyecto y para quién.]
 
 ```{toctree}
 :maxdepth: 2

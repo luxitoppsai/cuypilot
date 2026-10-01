@@ -1,6 +1,6 @@
-# <Nombre del pipeline o modelo>
+# [Nombre del pipeline o modelo]
 
-> Última actualización: <AAAA-MM-DD> · Código: `<ruta del módulo o notebook>`
+> Última actualización: AAAA-MM-DD · Código: `ruta/del/modulo_o_notebook`
 
 ## 1. Propósito
 
