@@ -2,7 +2,7 @@
 type: rfc
 proyecto: "cuypilot"
 rfc: RFC-001
-estado: borrador   # borrador | en-revision | aceptado | rechazado | superado
+estado: aceptado   # borrador | en-revision | aceptado | rechazado | superado
 fecha: 2026-09-30
 tags: [rfc, contrato]
 ---
@@ -148,7 +148,7 @@ el equipo los tiene aunque no haya instalado la CLI.
 |---|---|
 | `cuypilot list [--type T]` | Catálogo del wheel instalado: nombre, tipo, versión, descripción, y si ya está instalado. |
 | `cuypilot add <name>...` | Copia la pieza y sus `requires`, actualiza el lockfile y escribe o refresca el bloque base. Si el destino existe y no es de cuypilot, aborta (`--force` para sobrescribir). |
-| `cuypilot remove <name>...` | Borra los archivos registrados en el lockfile. Avisa si otra pieza instalada depende de esta. |
+| `cuypilot remove <name>...` | Borra los archivos registrados en el lockfile. Se niega si otra pieza instalada depende de esta, e indica cuál. |
 | `cuypilot status` | Por cada pieza: `ok`, `desactualizada` (el catálogo tiene una versión más nueva) o `modificada` (el hash no coincide). |
 | `cuypilot update [<name>...]` | Actualiza a la versión del wheel. **No pisa piezas `modificada`** salvo con `--force`. |
 
@@ -205,6 +205,7 @@ bordes, nombres claros, docstrings Sphinx) pasan a ser piezas. Se separan por **
 | `design-review` | skill | **Evaluar** código sin modificarlo | Revisión contra los principios: sobreingeniería (qué borrar), violaciones de SOLID, acoplamiento, defensas innecesarias. Devuelve hallazgos priorizados; no edita. |
 | `sphinx-docstrings` | skill | Documentar API Python | Docstrings reST (`:param:`, `:returns:`, `:raises:`) en módulos, clases y funciones públicas. |
 | `docs-writer` | agent | Documentación técnica de un paquete | Usa `sphinx-docstrings` (`requires`); prueba el camino agent + dependencias. |
+| `improve-prompt` | skill (**solo invocación manual**, `disable-model-invocation: true`) | `/improve-prompt <pedido>` | Convierte un pedido vago en un prompt completo (objetivo, contexto del workspace, alcance, restricciones, criterio de terminado, entregable). Hace como máximo 3 preguntas y **no ejecuta** la tarea. *Añadida el 2026-09-30 a pedido de Luis.* |
 
 Las evals de estas piezas incluyen **casos de coexistencia** entre `python-design`, `python-refactor` y
 `design-review`. Por ejemplo, "revisa este módulo" debe activar `design-review` y no `python-refactor`.
@@ -252,7 +253,7 @@ dependencia de ningún framework de LLM.
 
 1. Estructura del repo, `catalog.toml` y tests de validación del catálogo.
 2. CLI: `list` → `add` (con lockfile y bloque base) → `status` → `update` → `remove`. Tests sobre directorios temporales.
-3. Contenido inicial (4.10): `python-standards`, `python-design`, `python-refactor`, `design-review`, `sphinx-docstrings`, `docs-writer`, con sus evals.
+3. Contenido inicial (4.10): `python-standards`, `python-design`, `python-refactor`, `design-review`, `sphinx-docstrings`, `docs-writer`, `improve-prompt`, con sus evals.
 4. Gobernanza: CODEOWNERS (vacío), plantilla de PR, CONTRIBUTING, CHANGELOG y workflow de CI.
 5. `uv build` → `v0.1.0` → instalar el wheel en un proyecto real y probarlo en VS Code (**MVP demostrable**).
 
@@ -277,4 +278,4 @@ Ninguna bloqueante. Decisiones cerradas el 2026-09-30:
 2. `CODEOWNERS` vacío en la v1.
 3. La subida de versión de una pieza se controla con el checklist del PR, sin verificación en el CI.
 4. Ruta del wheel: `<ruta>` en el README; la completa Luis.
-5. Contenido inicial: piezas de principios de programación (4.10) + `sphinx-docstrings` + `docs-writer`.
+5. Contenido inicial: piezas de principios de programación (4.10) + `sphinx-docstrings` + `docs-writer` + `improve-prompt` (añadida después de aceptar, cambio de alcance menor).

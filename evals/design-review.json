@@ -1,0 +1,10 @@
+{
+  "item": "design-review",
+  "cases": [
+    {"kind": "trigger", "prompt": "Revisa pipeline.py y dime qué sobra.", "expected": "Activa design-review; no edita; hallazgos priorizados con archivo:línea en el formato definido."},
+    {"kind": "trigger", "prompt": "Audita el diseño de este paquete contra SOLID.", "expected": "Activa design-review; usa SOLID como detector de problemas reales, no como checklist."},
+    {"kind": "no-trigger", "prompt": "Crea una clase para conectarme a la API de clima.", "expected": "No activa design-review; corresponde python-design."},
+    {"kind": "coexistence", "prompt": "Simplifica esta función y aplica los cambios.", "expected": "Activa python-refactor, no design-review."},
+    {"kind": "edge", "prompt": "Revisa el código y si ves algo arréglalo.", "expected": "Reporta hallazgos y pregunta antes de editar, o declara que pasa a python-refactor."}
+  ]
+}

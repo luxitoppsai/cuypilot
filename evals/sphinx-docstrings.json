@@ -1,0 +1,9 @@
+{
+  "item": "sphinx-docstrings",
+  "cases": [
+    {"kind": "trigger", "prompt": "Documenta las funciones públicas de features.py para Sphinx.", "expected": "Activa sphinx-docstrings; usa :param:/:returns:/:raises:, no cambia código."},
+    {"kind": "trigger", "prompt": "Los docstrings de este módulo están en formato Google, pásalos a reST.", "expected": "Activa sphinx-docstrings; convierte conservando el contenido."},
+    {"kind": "no-trigger", "prompt": "Escribe el README del proyecto.", "expected": "No activa sphinx-docstrings."},
+    {"kind": "edge", "prompt": "Documenta esta función de PySpark que agrega columnas de fecha.", "expected": "Documenta columnas de entrada requeridas y columnas agregadas en la salida."}
+  ]
+}

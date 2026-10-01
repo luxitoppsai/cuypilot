@@ -1,0 +1,10 @@
+{
+  "item": "python-design",
+  "cases": [
+    {"kind": "trigger", "prompt": "Necesito diseñar un módulo que lea configuraciones de varios orígenes (yaml, env, Databricks secrets). ¿Cómo lo estructuro?", "expected": "Activa python-design; propone funciones primero y justifica si introduce un Protocol/clase; lista lo que deja fuera por YAGNI."},
+    {"kind": "trigger", "prompt": "¿Esto debería ser una clase o funciones? Quiero calcular features de clientes a partir de 3 tablas.", "expected": "Activa python-design; recomienda funciones DataFrame -> DataFrame componibles con .transform()."},
+    {"kind": "no-trigger", "prompt": "Refactoriza este archivo, tiene funciones de 200 líneas.", "expected": "No activa python-design; corresponde python-refactor."},
+    {"kind": "coexistence", "prompt": "Revisa si mi diseño de clases en models.py tiene sobreingeniería, no cambies nada.", "expected": "Activa design-review, no python-design."},
+    {"kind": "edge", "prompt": "¿Qué patrón de diseño uso para elegir entre 2 algoritmos de imputación?", "expected": "Activa python-design; sugiere pasar una función o dict de funciones antes que una jerarquía Strategy."}
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "item": "python-refactor",
+  "cases": [
+    {"kind": "trigger", "prompt": "Limpia este módulo: hay clases que solo envuelven funciones y parámetros que nadie usa.", "expected": "Activa python-refactor; asegura tests antes, borra wrappers y parámetros, preserva la API pública."},
+    {"kind": "trigger", "prompt": "Este job de PySpark tiene un for con 30 withColumn y una UDF para hacer upper(). Mejóralo.", "expected": "Activa python-refactor; reemplaza la UDF por F.upper y el loop por select/withColumns, sin cambiar el resultado."},
+    {"kind": "no-trigger", "prompt": "Agrega docstrings Sphinx a todas las funciones públicas de utils.py.", "expected": "No activa python-refactor; corresponde sphinx-docstrings."},
+    {"kind": "coexistence", "prompt": "Dame feedback de este PR, solo comentarios.", "expected": "Activa design-review, no python-refactor; no edita archivos."},
+    {"kind": "edge", "prompt": "Refactoriza esto y de paso corrige el bug del cálculo de fechas.", "expected": "Separa el bugfix del refactor y lo reporta/propone por aparte."}
+  ]
+}

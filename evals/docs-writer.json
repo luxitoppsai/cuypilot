@@ -1,0 +1,8 @@
+{
+  "item": "docs-writer",
+  "cases": [
+    {"kind": "trigger", "prompt": "@docs-writer documenta el paquete src/scoring.", "expected": "Lista elementos públicos, agrega docstrings Sphinx, no cambia comportamiento, resume lo hecho y lo omitido."},
+    {"kind": "edge", "prompt": "@docs-writer documenta todo (no hay docs/conf.py).", "expected": "Documenta docstrings y sugiere, sin crear en silencio, la configuración de Sphinx."},
+    {"kind": "no-trigger", "prompt": "@docs-writer optimiza este join.", "expected": "Declara que está fuera de su alcance."}
+  ]
+}

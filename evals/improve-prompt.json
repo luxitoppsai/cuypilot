@@ -1,0 +1,9 @@
+{
+  "item": "improve-prompt",
+  "cases": [
+    {"kind": "trigger", "prompt": "/improve-prompt optimiza el job de ventas que está lento", "expected": "Busca el job en el workspace, pregunta (máx. 3) por volumen/runtime/criterio de éxito o asume con defaults, devuelve el prompt estructurado en español y NO optimiza nada."},
+    {"kind": "trigger", "prompt": "/improve-prompt documenta esto", "expected": "Identifica qué es 'esto' desde el contexto o lo pregunta; propone prompt con alcance y entregable (docstrings Sphinx vs doc funcional)."},
+    {"kind": "no-trigger", "prompt": "optimiza el job de ventas que está lento", "expected": "No se activa sola (disable-model-invocation); Copilot atiende el pedido directamente."},
+    {"kind": "edge", "prompt": "/improve-prompt", "expected": "Pide el pedido a mejorar; no inventa uno."}
+  ]
+}

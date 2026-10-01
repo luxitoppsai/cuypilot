@@ -1,0 +1,39 @@
+# Registro del catálogo de cuypilot: fuente de verdad de versión, dueño y dependencias.
+# Al cambiar el contenido de una pieza, sube su `version` (semver) y anótalo en CHANGELOG.md.
+# Ver CONTRIBUTING.md.
+
+[items.python-standards]
+type = "instruction"
+version = "1.0.0"
+description = "Estándares base para todo .py: KISS, YAGNI, OOP con criterio, validar en los bordes, docstrings Sphinx."
+
+[items.python-design]
+type = "skill"
+version = "1.0.0"
+description = "Diseñar código nuevo: función vs clase, SOLID, patrones de diseño solo cuando se justifican."
+
+[items.python-refactor]
+type = "skill"
+version = "1.0.0"
+description = "Refactorizar código existente preservando el comportamiento: simplificar, borrar antes que agregar."
+
+[items.design-review]
+type = "skill"
+version = "1.0.0"
+description = "Revisar código sin modificarlo: sobreingeniería, SOLID, acoplamiento; hallazgos priorizados."
+
+[items.sphinx-docstrings]
+type = "skill"
+version = "1.0.0"
+description = "Escribir o corregir docstrings Sphinx (reST) en módulos, clases y funciones públicas."
+
+[items.docs-writer]
+type = "agent"
+version = "1.0.0"
+description = "Agente que documenta la API pública de un paquete Python con docstrings Sphinx."
+requires = ["sphinx-docstrings"]
+
+[items.improve-prompt]
+type = "skill"
+version = "1.0.0"
+description = "Convierte un pedido vago en un prompt claro y completo antes de trabajar (solo con /improve-prompt)."
