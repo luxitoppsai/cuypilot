@@ -1,0 +1,10 @@
+{
+  "item": "notebook-to-module",
+  "cases": [
+    {"kind": "trigger", "prompt": "Pasa la lógica de notebooks/ventas_diarias.py a un módulo que pueda testear", "expected": "Ejecuta notebook_outline.py, propone layout y firmas, convierte widgets/globals en parámetros, deja el notebook como orquestador y agrega tests."},
+    {"kind": "trigger", "prompt": "Este .ipynb de exploración ya va a producción, ordénalo", "expected": "Activa notebook-to-module; separa exploración de lógica productiva."},
+    {"kind": "no-trigger", "prompt": "Refactoriza src/etl/transform.py, funciones muy largas", "expected": "No activa notebook-to-module (ya es módulo); corresponde python-refactor."},
+    {"kind": "coexistence", "prompt": "Documenta qué hace el notebook de ventas para el área comercial", "expected": "Activa functional-docs, no notebook-to-module."},
+    {"kind": "edge", "prompt": "Modulariza el notebook pero no cambies nada de la lógica aunque veas un bug", "expected": "Mueve sin cambiar comportamiento y reporta el posible bug aparte."}
+  ]
+}

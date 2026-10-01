@@ -1,0 +1,10 @@
+{
+  "item": "functional-docs",
+  "cases": [
+    {"kind": "trigger", "prompt": "Haz la documentación funcional del pipeline de clientes activos", "expected": "Ejecuta data_flow.py, escribe docs/funcional/clientes_activos.md con las 9 secciones en español y marca [COMPLETAR] lo que no está en el código."},
+    {"kind": "trigger", "prompt": "Explícale al área de negocio qué hace el modelo de churn, en un documento", "expected": "Activa functional-docs; reglas en lenguaje de negocio, no descripción de código."},
+    {"kind": "no-trigger", "prompt": "Agrega docstrings Sphinx a features.py", "expected": "No activa functional-docs; corresponde sphinx-docstrings."},
+    {"kind": "coexistence", "prompt": "Configura Sphinx en este repo", "expected": "Activa sphinx-setup, no functional-docs."},
+    {"kind": "edge", "prompt": "Documenta el pipeline (no sé quién es el dueño ni la frecuencia)", "expected": "Deja [COMPLETAR] en responsables y frecuencia; no inventa."}
+  ]
+}

@@ -144,3 +144,13 @@ description = "Detecta y corrige anti-patrones de PySpark (script spark_lint.py,
 type = "skill"
 version = "1.0.0"
 description = "Tests unitarios de transformaciones PySpark: fixture SparkSession local, DataFrames pequeños, assertDataFrameEqual."
+
+[items.notebook-to-module]
+type = "skill"
+version = "1.0.0"
+description = "Pasa la lógica de un notebook de Databricks (.py/.ipynb) a un módulo testeable; script notebook_outline.py."
+
+[items.functional-docs]
+type = "skill"
+version = "1.0.0"
+description = "Documentación funcional en español de pipelines/modelos (plantilla de 9 secciones); script data_flow.py."
