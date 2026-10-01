@@ -106,7 +106,7 @@ class Workspace:
             raise CuypilotError(f"No están instaladas: {', '.join(missing)}")
         remaining = set(self.lock) - set(names)
         for other in sorted(remaining):
-            deps = set(self.catalog.get(other, Item(other, "", "", "")).requires) & set(names)
+            deps = set(self.catalog[other].requires if other in self.catalog else ()) & set(names)
             if deps:
                 raise CuypilotError(
                     f"`{other}` depende de {', '.join(sorted(deps))}; quítala también o déjalas."
