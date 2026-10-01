@@ -20,7 +20,7 @@ Qué problema de negocio resuelve y para quién, en un párrafo. [COMPLETAR si n
 
 ## 4. Reglas de negocio
 
-1. **<Nombre de la regla>:** descripción en lenguaje de negocio (qué se calcula, qué se excluye y por qué).
+1. **[Nombre de la regla]:** descripción en lenguaje de negocio (qué se calcula, qué se excluye y por qué).
 2. ...
 
 ## 5. Parámetros
