@@ -27,7 +27,7 @@ wheels = [
 
 [[package]]
 name = "cuypilot"
-version = "0.3.2"
+version = "0.5.1"
 source = { editable = "." }
 
 [package.dev-dependencies]

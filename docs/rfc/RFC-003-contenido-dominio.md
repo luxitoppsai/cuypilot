@@ -302,3 +302,9 @@ Decisiones del 2026-09-30:
 - Nuevo: wizard `cuypilot init` con banner (§4.8).
 
 Sin preguntas pendientes.
+
+## Enmiendas vigentes
+
+La distribución y el desarrollo usan pip y `python -m build` (enmienda de RFC-002 del 2026-10-01).
+La seguridad de operaciones y el wizard editable se amplían en
+[RFC-004](RFC-004-seguridad-wizard.md). Las propuestas históricas de uv no son instrucciones actuales.

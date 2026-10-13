@@ -37,3 +37,13 @@ def test_summarizes_project(write, run_script, tmp_path):
 def test_empty_project(run_script, tmp_path):
     out = run_script("improve-prompt", "workspace_context.py", str(tmp_path))
     assert "python: not declared" in out and "dependencies: none declared" in out
+
+
+def test_summarizes_all_assistant_locks(write, run_script, tmp_path):
+    write(".opencode/cuypilot.lock.json", '{"items": {"python-design": {"type": "skill"}}}')
+    write(".assistant/cuypilot.lock.json", '{"items": {"docs-writer": {"type": "agent"}}}')
+    write("AGENTS.md", "# Project conventions")
+    out = run_script("improve-prompt", "workspace_context.py", str(tmp_path))
+    assert "python-design (skill) [opencode]" in out
+    assert "docs-writer (agent) [genie]" in out
+    assert "instructions: AGENTS.md present" in out

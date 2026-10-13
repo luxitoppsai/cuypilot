@@ -84,6 +84,42 @@ def test_remove_refuses_when_dependents_installed(tmp_path):
     ws(tmp_path).remove(["docs-writer", "sphinx-docstrings"])
 
 
+@pytest.mark.parametrize("target", ["copilot", "opencode", "genie"])
+def test_remove_preserves_local_edits_unless_forced(tmp_path, target):
+    workspace = Workspace(tmp_path, load_catalog(), "test", target=target)
+    workspace.add(["python-design"])
+    path = tmp_path / next(iter(workspace.lock["python-design"]["files"]))
+    path.write_text("local edit")
+    with pytest.raises(CuypilotError, match="--force"):
+        workspace.remove(["python-design"])
+    assert path.read_text() == "local edit"
+    assert "python-design" in workspace.lock
+    workspace.remove(["python-design"], force=True)
+    assert not path.exists()
+
+
+@pytest.mark.parametrize("target", ["copilot", "opencode", "genie"])
+def test_update_protects_foreign_files_added_to_existing_skill(tmp_path, target):
+    catalog_dir = tmp_path / "catalog"
+    shutil.copytree(CATALOG_DIR, catalog_dir)
+    root = tmp_path / "project"
+    workspace = Workspace(root, load_catalog(catalog_dir), "test", catalog_dir, target=target)
+    workspace.add(["python-design"])
+    skill_path = root / next(iter(workspace.lock["python-design"]["files"]))
+    resource = skill_path.parent / "references" / "example.md"
+    resource.parent.mkdir(exist_ok=True)
+    resource.write_text("team notes")
+    source = catalog_dir / "skills/python-design/references/example.md"
+    source.parent.mkdir(exist_ok=True)
+    source.write_text("new catalogue resource")
+    before = {p.relative_to(root): p.read_bytes() for p in root.rglob("*") if p.is_file()}
+    with pytest.raises(CuypilotError, match="Archivos ajenos"):
+        workspace.update()
+    assert before == {p.relative_to(root): p.read_bytes() for p in root.rglob("*") if p.is_file()}
+    workspace.update(force=True)
+    assert resource.read_text() == "new catalogue resource"
+
+
 def test_status_detects_local_edits_and_update_respects_them(tmp_path):
     ws(tmp_path).add(["sphinx-docstrings"])
     assert ws(tmp_path).status() == {"sphinx-docstrings": "ok"}
@@ -184,3 +220,136 @@ def test_bytecode_caches_are_never_copied(tmp_path):
     project = tmp_path / "project"
     ws(project, catalog).add(["sphinx-docstrings"])
     assert not list(project.rglob("__pycache__"))
+
+
+@pytest.mark.parametrize("payload", [None, {}, {"cuypilot_version": "1", "items": []}])
+def test_invalid_lock_is_rejected(tmp_path, payload):
+    target = tmp_path / LOCK_PATH
+    target.parent.mkdir()
+    target.write_text(json.dumps(payload))
+    with pytest.raises(CuypilotError, match="Lockfile inválido"):
+        ws(tmp_path)
+
+
+@pytest.mark.parametrize(
+    "relative", ["../victim", "/tmp/victim", ".github/skills/python-design/../../victim"]
+)
+def test_lock_cannot_claim_external_files(tmp_path, relative):
+    ws(tmp_path).add(["python-design"])
+    target = tmp_path / LOCK_PATH
+    payload = json.loads(target.read_text())
+    payload["items"]["python-design"]["files"] = {relative: "sha256:" + "0" * 64}
+    target.write_text(json.dumps(payload))
+    with pytest.raises(CuypilotError, match="Ruta no permitida"):
+        ws(tmp_path)
+
+
+def test_symlink_destination_is_rejected(tmp_path):
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    project = tmp_path / "project"
+    project.mkdir()
+    (project / ".github").symlink_to(outside, target_is_directory=True)
+    with pytest.raises(CuypilotError, match="Enlace simbólico"):
+        ws(project)
+    assert not list(outside.iterdir())
+
+
+def test_update_checks_foreign_new_dependency(tmp_path, catalog_copy):
+    from dataclasses import replace
+
+    project = tmp_path / "project"
+    workspace = ws(project, catalog_copy)
+    workspace.add(["python-design"])
+    skill = catalog_copy / "skills/python-design/SKILL.md"
+    skill.write_text(skill.read_text() + "\nNew rule.\n")
+    workspace.catalog["python-design"] = replace(
+        workspace.catalog["python-design"], requires=("sphinx-docstrings",)
+    )
+    foreign = project / SKILL
+    foreign.parent.mkdir(parents=True)
+    foreign.write_text("mine")
+    before = (project / LOCK_PATH).read_bytes()
+    with pytest.raises(CuypilotError, match="dependencias nuevas"):
+        workspace.update()
+    assert foreign.read_text() == "mine"
+    assert (project / LOCK_PATH).read_bytes() == before
+
+
+def test_failed_save_restores_files_and_lock(tmp_path, monkeypatch):
+    workspace = ws(tmp_path)
+    workspace.add(["python-design"])
+    before = {p.relative_to(tmp_path): p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()}
+    original_save = workspace._save
+
+    def fail_after_save():
+        original_save()
+        raise OSError("disk failure")
+
+    monkeypatch.setattr(workspace, "_save", fail_after_save)
+    with pytest.raises(OSError, match="disk failure"):
+        workspace.add(["sphinx-docstrings"])
+    after = {p.relative_to(tmp_path): p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()}
+    assert after == before
+    assert set(workspace.lock) == {"python-design"}
+
+
+def test_cli_invalid_json_has_no_traceback(tmp_path, monkeypatch, capsys):
+    target = tmp_path / LOCK_PATH
+    target.parent.mkdir()
+    target.write_text("{")
+    monkeypatch.chdir(tmp_path)
+    assert main(["status"]) == 1
+    assert "Lockfile inválido" in capsys.readouterr().err
+
+
+def test_broken_managed_block_changes_nothing(tmp_path):
+    target = tmp_path / INSTRUCTIONS_PATH
+    target.parent.mkdir()
+    target.write_text(START + "\nuser content")
+    with pytest.raises(CuypilotError, match="Bloque gestionado inválido"):
+        ws(tmp_path).add(["python-design"])
+    assert target.read_text() == START + "\nuser content"
+
+
+@pytest.mark.parametrize("operation", ["update", "remove"])
+def test_failed_operation_restores_existing_files(tmp_path, monkeypatch, operation):
+    workspace = ws(tmp_path)
+    workspace.add(["python-design"])
+    if operation == "update":
+        (tmp_path / ".github/skills/python-design/SKILL.md").write_text("local edit")
+    before = {p.relative_to(tmp_path): p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()}
+
+    def fail_save():
+        raise OSError("save failure")
+
+    monkeypatch.setattr(workspace, "_save", fail_save)
+    with pytest.raises(OSError, match="save failure"):
+        if operation == "update":
+            workspace.update(force=True)
+        else:
+            workspace.remove(["python-design"])
+    after = {p.relative_to(tmp_path): p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()}
+    assert before == after
+    assert set(workspace.lock) == {"python-design"}
+
+
+def test_force_cannot_follow_skill_symlink(tmp_path):
+    workspace = ws(tmp_path)
+    target = tmp_path / ".github/skills/python-design"
+    target.parent.mkdir(parents=True)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    target.symlink_to(outside, target_is_directory=True)
+    with pytest.raises(CuypilotError, match="Enlace simbólico"):
+        workspace.add(["python-design"], force=True)
+    assert not list(outside.iterdir())
+
+
+def test_parent_file_is_rejected_before_tool_commands(tmp_path):
+    workspace = Workspace(tmp_path, load_catalog(), "test", run=lambda *args: pytest.fail("command ran"))
+    (tmp_path / ".github").mkdir()
+    (tmp_path / ".github/skills").write_text("mine")
+    with pytest.raises(CuypilotError, match="Directorio inválido"):
+        workspace.add(["python-design", "graphify"])
+    assert (tmp_path / ".github/skills").read_text() == "mine"

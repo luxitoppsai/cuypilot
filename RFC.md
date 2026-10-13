@@ -279,3 +279,9 @@ Ninguna bloqueante. Decisiones cerradas el 2026-09-30:
 3. La subida de versión de una pieza se controla con el checklist del PR, sin verificación en el CI.
 4. Ruta del wheel: `<ruta>` en el README; la completa Luis.
 5. Contenido inicial: piezas de principios de programación (4.10) + `sphinx-docstrings` + `docs-writer` + `improve-prompt` (añadida después de aceptar, cambio de alcance menor).
+
+## Enmiendas vigentes
+
+La distribución y el desarrollo usan pip y `python -m build` (enmienda de RFC-002 del 2026-10-01).
+La seguridad de operaciones y el wizard editable se amplían en
+[RFC-004](docs/rfc/RFC-004-seguridad-wizard.md). Las propuestas históricas de uv no son instrucciones actuales.

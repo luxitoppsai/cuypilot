@@ -2,6 +2,59 @@
 
 Formato: [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado: semver (ver `CONTRIBUTING.md`).
 
+## [0.5.1] - 2026-10-08
+
+### Corregido
+- `remove` protege archivos modificados localmente; `--force` permite eliminarlos explícitamente.
+- `update` protege también archivos ajenos en recursos nuevos de piezas ya instaladas.
+- Validación de nombres del catálogo: sin guiones iniciales/finales ni consecutivos.
+
+### Documentación
+- Evaluación de Copilot, OpenCode y Genie para gobernar un equipo de analytics, con evidencia y prioridades.
+- Guía de operación y registro de evaluaciones, PR con resultados por destino y RFC-006 propuesto.
+- Distinción entre catálogo versionado, compatibilidad y aprobación efectiva; responsables y reglas remotas pendientes.
+- Gobernanza como lineamientos Markdown; CODEOWNERS con plantilla para asignar responsables reales y enlaces desde README/CONTRIBUTING.
+
+## [0.5.0] - 2026-10-08
+
+### Añadido
+- Un wheel para Copilot, OpenCode y Genie Code: `--target` y `--path` en los comandos.
+- Wizard con selección de asistente, compatibilidad y pasos de uso según destino.
+- Adaptación de skills, scripts, agents e instructions; Genie recibe workflows de agents como skills.
+- Lockfile por destino con versiones, dependencias instaladas, hashes del contenido adaptado
+  y hash de integración de tools, aun cuando la versión del programa no cambia.
+- `deploy`: publicación Genie con CLI oficial Databricks, perfil, dry-run y confirmación;
+  protege conflictos y ediciones remotas, importa RAW y publica el lock al final.
+- Graphify usa exclusivamente CLI local en OpenCode; conserva su integración VS Code para Copilot.
+- Guía de múltiples asistentes y RFC-005.
+
+### Corregido
+- `status` detecta cambios de versión y dependencias aunque el contenido no haya cambiado.
+- `remove` respeta dependencias registradas en la instalación, aunque el catálogo nuevo las cambie.
+- Protección de ediciones dentro del bloque gestionado mediante hash, con restauración explícita.
+- `improve-prompt` 1.2.0: su script resume locks e instrucciones de los tres asistentes.
+
+Los paquetes de tools se comparten si se usa el mismo entorno Python. Genie no instala tools locales;
+registrar una carpeta adicional de skills requiere Settings de Genie Code una vez. No se verificó
+comportamiento real de LLM ni publicación en un workspace autenticado: el despliegue se prueba simulado.
+
+## [0.4.0] - 2026-10-01
+
+### Seguridad
+- Validación del lockfile y de la propiedad de sus rutas; rechazo de enlaces simbólicos y destinos inválidos.
+- Restauración de archivos gestionados y lockfile ante errores de operación; no revierte efectos externos.
+- Actualizaciones validan conflictos en dependencias nuevas y ejecutan también sus instaladores de herramientas.
+- Preferencia de ejecutables del entorno Python actual sobre PATH; errores de archivos sin traceback.
+- Rechazo de bloques gestionados con marcadores incompletos, duplicados o invertidos.
+
+### Wizard
+- Cuatro pasos visibles, ruta del proyecto y selección editable con números, todos o ninguno.
+- Utilidad, tipo y estado por pieza; dependencias y versiones en el resumen; resultados numerados.
+- Entradas inválidas se vuelven a pedir, texto ajustado al ancho de terminal y NO_COLOR incluso vacío.
+- Confirmación de comandos única y restauración de la función de confirmación al terminar.
+
+Contrato: RFC-004. Regresiones de seguridad y del wizard añadidas.
+
 ## [0.3.2] - 2026-10-01
 
 ### Cambiado

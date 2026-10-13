@@ -35,7 +35,7 @@ requires = ["sphinx-docstrings"]
 
 [items.improve-prompt]
 type = "skill"
-version = "1.1.0"
+version = "1.2.0"
 description = "Convierte un pedido vago en un prompt claro y completo antes de trabajar (solo con /improve-prompt)."
 
 # --- Terceros copiados al catálogo (RFC-002 §4.2). Al actualizar desde el original: nuevo `ref` + PR. ---
@@ -122,13 +122,16 @@ adapted = true   # sin artefactos de citas; el reporte escrito solo si el usuari
 
 [items.graphify]
 type = "tool"
+targets = ["copilot", "opencode"]
 version = "0.9.73"
-description = "Grafo de conocimiento del repo para Copilot (/graphify); el código se procesa localmente con tree-sitter."
+description = "Grafo de conocimiento: /graphify en Copilot o CLI local en OpenCode; el código se procesa localmente con tree-sitter."
 license = "Apache-2.0"
 package = "graphifyy==0.9.73"
 # Conecta graphify a VS Code y construye el índice del código (local, sin LLM).
 configure = [["graphify", "vscode", "install"], ["graphify", "update", "."]]
 uninstall = [["graphify", "vscode", "uninstall"]]
+configure_targets = { opencode = [["graphify", "update", "."]] }
+uninstall_targets = { opencode = [] }
 check = ["graphify", "--version"]
 gitignore = ["graphify-out/", "graph.json"]
 instructions = """
@@ -170,6 +173,7 @@ description = "Crea o repara docs/ con Sphinx: sección técnica (autodoc/autosu
 
 [items.pyspark-antipattern]
 type = "tool"
+targets = ["copilot", "opencode"]
 version = "0.4.1"
 description = "Linter externo de PySpark (60+ reglas, Rust) que complementa a spark_lint.py; solo terminal."
 license = "MIT"

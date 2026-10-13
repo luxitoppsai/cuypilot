@@ -1,7 +1,7 @@
 # cuypilot
 
 Catálogo centralizado, versionado y revisado de **skills, agents, instructions y herramientas para
-GitHub Copilot en VS Code**, pensado para desarrolladores, data scientists y ML engineers que trabajan
+GitHub Copilot en VS Code, OpenCode y Genie Code de Databricks**, pensado para desarrolladores, data scientists y ML engineers que trabajan
 con Python y PySpark (Databricks).
 
 Se distribuye como **wheel** con una CLI (`cuypilot`). Cada proyecto instala **solo las piezas que
@@ -11,14 +11,14 @@ necesita**, que quedan versionadas en su propio repositorio.
 
 ## Instalación
 
-Requisitos: Python ≥3.11, pip y VS Code con GitHub Copilot Chat. **No necesita uv ni pipx.**
+Requisitos: Python ≥3.11, pip y el asistente que vayas a usar. **No necesita uv ni pipx.**
 
 cuypilot se instala como **dependencia de desarrollo**, en el entorno virtual del proyecto donde lo vas a usar:
 
 ```bash
 python -m venv .venv                 # si el proyecto aún no tiene uno
 source .venv/bin/activate            # Windows: .venv\Scripts\activate
-pip install <ruta>/cuypilot-0.3.2-py3-none-any.whl   # y agrega esa línea a tu requirements-dev.txt
+pip install <ruta>/cuypilot-0.5.1-py3-none-any.whl   # y agrega esa línea a tu requirements-dev.txt
 cuypilot --version
 ```
 
@@ -26,10 +26,14 @@ cuypilot --version
 
 ## Uso rápido
 
-Desde la raíz de tu repo, el wizard te guía (banner, rol, piezas sugeridas):
+Desde la raíz de tu repo, el wizard te guía en cuatro pasos: rol, selección editable, resumen e instalación.
+Primero eliges el asistente. Puedes conservar las sugerencias con Enter o elegir números, `todos` o `ninguno`:
 
 ```bash
 cuypilot init
+# O sin preguntas:
+cuypilot init --target opencode --role dev --yes
+cuypilot init --target genie --role mle --yes
 ```
 
 O pieza por pieza:
@@ -41,7 +45,14 @@ cuypilot status                                        # ok | desactualizada | m
 git add .github .gitignore && git commit -m "chore: copilot customizations via cuypilot"
 ```
 
-Después, en Copilot Chat, escribe `/` para ver las skills instaladas. Puedes escribirle en español.
+Sin `--target`, los comandos siguen usando Copilot. Usa `--target opencode` o `--target genie` para
+instalar, actualizar y quitar en otro asistente; `--path` elige el proyecto. Cada destino tiene su lockfile.
+
+**[Guía de múltiples asistentes](docs/multiples-asistentes.md)**: formatos, versiones y publicación desde
+la terminal hacia Databricks (`cuypilot deploy --workspace-path ...`). En Genie, los agents se adaptan
+como skills; las herramientas locales se ofrecen para Copilot y OpenCode.
+
+En Copilot usa `/nombre`; en OpenCode pide la skill por nombre; en Genie usa `@nombre`. Puedes escribir en español.
 
 | Comando | Qué hace |
 |---|---|
@@ -51,6 +62,7 @@ Después, en Copilot Chat, escribe `/` para ver las skills instaladas. Puedes es
 | `cuypilot status` | Estado de lo instalado |
 | `cuypilot update` | Actualiza a la versión del wheel; no pisa tus ediciones |
 | `cuypilot remove <nombre>...` | Quita piezas |
+| `cuypilot deploy --workspace-path <carpeta>` | Publica la instalación Genie usando la CLI de Databricks |
 
 ## Catálogo
 
@@ -80,7 +92,10 @@ python -m build                # genera dist/cuypilot-X.Y.Z-py3-none-any.whl
 ```
 
 - Contribuir: [`CONTRIBUTING.md`](CONTRIBUTING.md)
+- Gobernanza del equipo: [lineamientos](docs/gobernanza.md), [responsables de revisión](.github/CODEOWNERS), [evaluación de los tres escenarios](docs/research/evaluacion-gobernanza-analytics.md) y [RFC-006 propuesto](docs/rfc/RFC-006-gobernanza-analytics.md).
 - Cambios por versión: [`CHANGELOG.md`](CHANGELOG.md)
 - Contratos: [`RFC.md`](RFC.md) (RFC-001, base) · [`RFC-002`](docs/rfc/RFC-002-integraciones-terceros.md) (scripts y terceros) · [`RFC-003`](docs/rfc/RFC-003-contenido-dominio.md) (PySpark, ML, docs)
 - Investigación: [`docs/research/estado-del-arte.md`](docs/research/estado-del-arte.md)
+- Múltiples asistentes: [`RFC-005`](docs/rfc/RFC-005-multiples-asistentes.md).
+- Decisiones de seguridad y wizard: [`RFC-004`](docs/rfc/RFC-004-seguridad-wizard.md).
 - Segundo cerebro: `luxitopp-vault/10-Projects/cuypilot/cuypilot.md` (ver [`PROJECT.md`](PROJECT.md))

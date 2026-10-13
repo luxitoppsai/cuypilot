@@ -11,7 +11,7 @@ from cuypilot.catalog import CATALOG_DIR, PATHS, Tool, load_catalog
 
 ROOT = Path(__file__).parents[1]
 CATALOG = load_catalog()
-NAME_RE = re.compile(r"^[a-z0-9-]{1,64}$")
+NAME_RE = re.compile(r"^(?=.{1,64}$)[a-z0-9]+(?:-[a-z0-9]+)*$")
 SECRET_RE = re.compile(
     r"(?i)(api[_-]?key|secret|token|password)\s*[:=]\s*['\"][^'\"]{8,}|ghp_[A-Za-z0-9]{20,}|dapi[0-9a-f]{20,}"
 )
@@ -123,7 +123,12 @@ def test_tool_is_well_formed(tool):
     assert tool.package.endswith(f"=={tool.version}"), (
         "package debe fijar la versión aprobada (nombre==versión)"
     )
-    for cmd in (*tool.configure, *tool.uninstall, tool.check):
+    assert set(tool.configure_targets) <= set(tool.targets)
+    assert set(tool.uninstall_targets) <= set(tool.targets)
+    commands = [tool.check]
+    for target in tool.targets:
+        commands.extend((*tool.configuration(target), *tool.disconnection(target)))
+    for cmd in commands:
         assert isinstance(cmd, tuple) and all(isinstance(a, str) for a in cmd), (
             "cada comando es una lista de str"
         )

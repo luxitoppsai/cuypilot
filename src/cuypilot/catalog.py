@@ -27,6 +27,7 @@ class Item:
     :param description: Descripción corta para humanos.
     :param owner: Dueño de la pieza (opcional).
     :param requires: Nombres de otras piezas que se instalan junto con esta.
+    :param targets: Asistentes compatibles con la pieza.
     :param upstream: Origen de una pieza de terceros (``repo``, ``ref``, ``path``, ``license``, ``adapted``).
     """
 
@@ -37,6 +38,7 @@ class Item:
     owner: str = ""
     requires: tuple[str, ...] = ()
     upstream: dict | None = field(default=None, compare=False)
+    targets: tuple[str, ...] = ("copilot", "opencode", "genie")
 
     @property
     def relpath(self) -> str:
@@ -70,6 +72,8 @@ class Tool(Item):
     :param uninstall: Comandos que la desconectan del workspace.
     :param check: Comando cuya salida contiene la versión instalada.
     :param gitignore: Líneas a agregar a ``.gitignore``.
+    :param configure_targets: Sustituciones de configuración por destino.
+    :param uninstall_targets: Sustituciones de desconexión por destino.
     :param instructions: Regla que se agrega al bloque gestionado mientras esté instalada.
     """
 
@@ -80,6 +84,16 @@ class Tool(Item):
     check: tuple[str, ...] = ()
     gitignore: tuple[str, ...] = ()
     instructions: str = ""
+    configure_targets: dict[str, tuple[tuple[str, ...], ...]] = field(default_factory=dict)
+    uninstall_targets: dict[str, tuple[tuple[str, ...], ...]] = field(default_factory=dict)
+
+    def configuration(self, target: str) -> tuple[tuple[str, ...], ...]:
+        """Comandos de conexión aprobados para el destino."""
+        return self.configure_targets.get(target, self.configure)
+
+    def disconnection(self, target: str) -> tuple[tuple[str, ...], ...]:
+        """Comandos de desconexión aprobados para el destino."""
+        return self.uninstall_targets.get(target, self.uninstall)
 
     def files(self, root: Path = CATALOG_DIR) -> dict[str, bytes]:
         """Una herramienta no copia archivos: los gestiona su propio instalador."""
@@ -88,6 +102,8 @@ class Tool(Item):
 
 def _freeze(value):
     """Convierte listas (anidadas) de TOML en tuplas, para dataclasses inmutables."""
+    if isinstance(value, dict):
+        return {key: _freeze(v) for key, v in value.items()}
     return tuple(_freeze(v) for v in value) if isinstance(value, list) else value
 
 

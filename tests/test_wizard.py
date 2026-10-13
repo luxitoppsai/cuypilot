@@ -21,7 +21,7 @@ def test_role_installs_suggested_pieces_without_tools(tmp_path, capsys):
     roles = load_roles()
     mle = list(roles).index("mle") + 1
     # rol, graphify? no, pyspark-antipattern? no, ¿instalar? (Enter = sí)
-    code, ws = wizard(tmp_path, str(mle), "n", "n", "")
+    code, ws = wizard(tmp_path, str(mle), "", "n", "n", "")
     out = capsys.readouterr().out
 
     assert code == 0
@@ -38,7 +38,7 @@ def test_manual_selection_and_invalid_answer(tmp_path, capsys):
 
 
 def test_cancel_installs_nothing(tmp_path):
-    code, ws = wizard(tmp_path, "1", "n", "n", "n")
+    code, ws = wizard(tmp_path, "1", "", "n", "n", "n")
     assert code == 0 and ws.lock == {}
     assert not (tmp_path / ".github").exists()
 
@@ -56,7 +56,7 @@ def test_non_interactive_cli(tmp_path, monkeypatch, capsys):
 
 def test_no_args_on_fresh_repo_opens_wizard(tmp_path, monkeypatch, capsys):
     monkeypatch.chdir(tmp_path)
-    replies = iter(["1", "n", "n", "n"])
+    replies = iter(["1", "1", "", "n", "n", "n"])
     monkeypatch.setattr("builtins.input", lambda prompt="": next(replies))
     assert main([]) == 0
     assert "¿Cuál es tu rol?" in capsys.readouterr().out
@@ -69,9 +69,33 @@ def test_tools_are_confirmed_once_with_commands_shown(tmp_path, capsys):
     )
     tools = [n for n, i in ws.catalog.items() if type(i).__name__ == "Tool"]
     # rol 1, sí a la primera herramienta, no al resto, y una sola confirmación final.
-    replies = iter(["1", "s", *["n"] * (len(tools) - 1), ""])
+    replies = iter(["1", "", "s", *["n"] * (len(tools) - 1), ""])
     assert run_wizard(ws, load_roles(), "0.0.0-test", ask=lambda prompt: next(replies)) == 0
 
     out = capsys.readouterr().out
     assert "Y se ejecutarán estos comandos:" in out and "¿Continuar?" not in out
     assert tools[0] in ws.lock and calls
+
+
+def test_role_selection_can_be_replaced_and_invalid_numbers_retried(tmp_path, capsys):
+    code, ws = wizard(tmp_path, "1", "1,999", "6", "n", "n", "s")
+    assert code == 0
+    assert set(ws.lock) == {"docs-writer", "sphinx-docstrings"}
+    output = capsys.readouterr().out
+    assert "Selección inválida" in output
+    assert "dependencia" in output
+    assert all(f"{step}/4" in output for step in range(1, 5))
+
+
+def test_empty_selection_and_invalid_yes_no(tmp_path, capsys):
+    code, ws = wizard(tmp_path, "1", "ninguno", "tal vez", "n", "n")
+    assert code == 0 and not ws.lock
+    assert "Responde sí o no" in capsys.readouterr().out
+
+
+def test_no_color_even_when_environment_value_is_empty(monkeypatch):
+    from cuypilot.wizard import paint
+
+    monkeypatch.setenv("NO_COLOR", "")
+    monkeypatch.setattr("sys.stdout.isatty", lambda: True)
+    assert paint("hello", "32") == "hello"

@@ -1,5 +1,10 @@
 # Guía de usuario de cuypilot
 
+> Desde 0.5.0 el mismo wheel soporta Copilot, OpenCode y Genie Code. Esta guía describe el uso original
+> de Copilot. Para destinos, versiones y despliegue Databricks, consulta
+> [la guía de múltiples asistentes](multiples-asistentes.md). El wizard pregunta primero el asistente.
+
+
 cuypilot instala en tu proyecto **skills, agents, instructions y herramientas para GitHub Copilot en
 VS Code**, elegidas y revisadas por el equipo. Esta guía explica cómo instalarlo, cómo usarlo en el día
 a día y qué cambia en tu repositorio.
@@ -67,8 +72,18 @@ Desde **la raíz de tu repositorio**, ejecuta el wizard:
 cuypilot init        # o simplemente `cuypilot` en un repo sin piezas instaladas
 ```
 
-Verás el banner de cuypilot. El wizard te pregunta tu rol, te sugiere las piezas para ese rol, te ofrece
-las herramientas opcionales y las instala:
+Verás el banner y la ruta del proyecto. El wizard tiene cuatro pasos:
+
+1. **Rol:** elige el perfil o la selección manual.
+2. **Selección:** muestra utilidad, tipo y piezas instaladas. Enter conserva las sugerencias;
+   `1,3,6` reemplaza la selección; `todos` o `ninguno` selecciona todo o nada. Los números inválidos
+   se vuelven a pedir. Después ofrece las herramientas opcionales por separado.
+3. **Resumen:** incluye dependencias, versiones y comandos externos. Una confirmación final autoriza
+   la instalación. Responder `n` cancela.
+4. **Instalación:** muestra el resultado y cómo usar cada tipo de pieza en Copilot.
+
+El texto se adapta al ancho de la terminal y `NO_COLOR` desactiva los colores.
+Ejemplo del primer paso:
 
 ```
                           _ __      __
@@ -76,7 +91,7 @@ las herramientas opcionales y las instala:
  / ___/ / / / / / / __ \/ / / __ \/ __/
 / /__/ /_/ / /_/ / /_/ / / / /_/ / /_
 \___/\__,_/\__, / .___/_/_/\____/\__/
-          /____/_/  v0.3.0 · skills, agents y herramientas para GitHub Copilot
+          /____/_/  v0.4.0 · skills, agents y herramientas para GitHub Copilot
 
   ¿Cuál es tu rol?
     1) Desarrollador Python
@@ -191,14 +206,14 @@ Herramientas opcionales para cualquier rol: `graphify` (repos grandes o desconoc
 | `cuypilot add <nombre>... [--dry-run] [--yes] [--force]` | Instala piezas y sus dependencias |
 | `cuypilot status` | Estado de cada pieza instalada |
 | `cuypilot update [<nombre>...] [--yes] [--force]` | Actualiza a la versión del wheel instalado |
-| `cuypilot remove <nombre>... [--yes]` | Quita piezas |
+| `cuypilot remove <nombre>... [--yes] [--force]` | Quita piezas; protege archivos editados |
 | `cuypilot --version` | Versión de cuypilot |
 
 Opciones:
 
 - `--dry-run` (solo en `add`): muestra qué se instalaría y qué comandos se ejecutarían, **sin cambiar nada**.
 - `--yes`: no pide confirmación antes de ejecutar los comandos de una herramienta.
-- `--force`: en `add`, sobrescribe archivos que existían y no eran de cuypilot; en `update`, pisa piezas que editaste a mano.
+- `--force`: en `add`, sobrescribe archivos que existían y no eran de cuypilot; en `update`, pisa piezas editadas y conflictos con recursos nuevos; en `remove`, elimina archivos editados. Revisa y respalda tus cambios antes.
 
 Estados que muestra `status`:
 
@@ -341,6 +356,17 @@ Los cambios de cada versión están en el [`CHANGELOG.md`](../CHANGELOG.md).
 - Las piezas de terceros están fijadas a un **commit exacto** que fue revisado, con su licencia incluida.
 - cuypilot **solo ejecuta comandos** de herramientas definidas en el catálogo, **siempre te los muestra
   antes** y pide confirmación, y no usa un shell.
+- El lockfile se valida antes de usarlo: nombres, tipos, versiones, hashes y rutas propias de cada pieza.
+  Los archivos mal formados producen un error legible, sin traceback.
+- Las rutas gestionadas rechazan enlaces simbólicos, rutas externas y directorios usados como archivos.
+  `--force` no omite estas protecciones.
+- `update` detecta archivos ajenos en dependencias nuevas antes de cambiar archivos o instalar paquetes;
+  solo `--force` permite sobrescribir esos conflictos.
+- Ante un error de operación, se restauran los archivos gestionados y el lockfile con el respaldo en memoria.
+  Esto requiere que el sistema permita escribir el respaldo. No revierte paquetes pip, archivos externos
+  creados por herramientas, cambios en el usuario ni procesos terminados abruptamente. No ejecutes dos
+  operaciones simultáneas sobre el mismo proyecto.
+- Los ejecutables se buscan primero en el entorno del Python que ejecuta cuypilot y después en `PATH`.
 - Los scripts de las skills son solo lectura y no usan la red.
 - Revisa los comandos que Copilot te propone ejecutar en la terminal antes de aprobarlos.
 

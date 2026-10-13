@@ -1,3 +1,16 @@
-# Dueños por carpeta del catálogo. Vacío en la v1 (RFC-001 §4.9).
-# Ejemplo:
-# /src/cuypilot/catalog/skills/python-design/  @org/equipo-plataforma
+# Responsables de revisión: completar con usuarios/equipos reales con acceso de escritura.
+# Lineamientos: docs/gobernanza.md. Solo comentarios: todavía no asigna revisores.
+# Reemplaza los ejemplos antes de descomentarlos; no son identidades configuradas.
+# La aprobación obligatoria requiere además reglas de protección en el proveedor.
+# La última coincidencia prevalece: reglas generales primero, específicas después.
+#
+# *                                       @organizacion/mantenedores
+# /src/cuypilot/                           @organizacion/mantenedores
+# /src/cuypilot/catalog/skills/            @organizacion/analytics
+# /src/cuypilot/catalog/agents/            @organizacion/analytics
+# /src/cuypilot/catalog/instructions/      @organizacion/analytics
+# /src/cuypilot/catalog/catalog.toml       @organizacion/mantenedores
+# /tests/                                 @organizacion/mantenedores
+# /docs/                                  @organizacion/analytics
+# /CONTRIBUTING.md                         @organizacion/mantenedores
+# /.github/                               @organizacion/mantenedores

@@ -1,5 +1,10 @@
 # Contribuir a cuypilot
 
+Lee primero los [lineamientos de gobernanza](docs/gobernanza.md): responsabilidades, evidencia de
+evaluación y mantenimiento. Las asignaciones de revisores se documentan en
+[CODEOWNERS](.github/CODEOWNERS); completar la plantilla y exigir aprobación requiere responsables
+reales y configuración del proveedor. El RFC-006 recoge mejoras futuras, no requisitos técnicos ya implementados.
+
 ## Agregar o modificar una pieza
 
 1. Crea el archivo en `src/cuypilot/catalog/` según su tipo:
@@ -13,17 +18,17 @@
 2. Regístrala en `src/cuypilot/catalog/catalog.toml` con `type`, `version`, `description` y, si aplica, `owner` y `requires`.
 3. Si es una skill o un agente, crea `evals/<name>.json` con al menos 3 casos, incluyendo `trigger` y `no-trigger` (ver los existentes).
 4. Corre `pytest` (valida el catálogo) y `ruff check .` (instala lo necesario con `pip install -e . --group dev`).
-5. Prueba la pieza en VS Code: en un proyecto de prueba, `pip install -e <ruta-a-cuypilot>` y `cuypilot add <name>`. Ejecuta tus evals a mano.
+5. Prueba cada destino declarado en un proyecto sintético: `pip install -e <ruta-a-cuypilot>` y `cuypilot add <name> --target <destino>`. Registra evals con cliente/modelo, versiones y evidencia según la [guía de gobernanza](docs/gobernanza.md#registrar-evaluaciones); distingue resultados reales de pruebas de archivos.
 6. Abre un PR y completa el checklist.
 
 ## Reglas de contenido
 
-- **Idioma:** las piezas van en **inglés** (el modelo las sigue mejor); la documentación para personas, en español. La instrucción base ya le pide a Copilot que responda en el idioma del usuario (ADR-002).
+- **Idioma:** por convención del catálogo, las piezas van en **inglés** y la documentación para personas, en español. La instrucción base pide responder en el idioma del usuario; esta convención no demuestra superioridad de un idioma para todos los modelos.
 - **La `description` es el disparador.** Debe decir qué hace, **cuándo usarla y cuándo no** (y qué pieza usar en su lugar). Una descripción vaga hace que la skill no se active o que le robe la activación a otras.
 - **Una responsabilidad por pieza.** Antes de crear una, revisa si ya existe una parecida para extenderla.
 - **Directivas, no sugerencias:** "Use X", no "X might be a good idea".
 - **Sin secretos, sin red y sin scripts** salvo que sea imprescindible; si los hay, se justifican en el PR.
-- **Skills que no deben activarse solas** (por ejemplo, de uso explícito): `disable-model-invocation: true`.
+- **Skills de uso explícito:** en Copilot, `disable-model-invocation: true`. En otros destinos consulta la adaptación y verifica el comportamiento; una recomendación en el cuerpo no equivale a un control del cliente.
 - Usa solo el frontmatter estándar de VS Code; versión, dueño y dependencias van en `catalog.toml`.
 
 ## Scripts dentro de una skill
@@ -62,6 +67,21 @@ Para programas externos que tienen su propio instalador (por ejemplo `graphify`)
 
 Pruébala de punta a punta en un entorno aislado (un `python -m venv` nuevo, sin activar, y con `HOME` temporal), incluyendo
 `remove` y la convivencia con el bloque gestionado de `copilot-instructions.md`.
+
+## Compatibilidad con asistentes
+
+El catálogo es único; `targets` limita destinos cuando una pieza no funciona en todos.
+Las rutas y conversiones viven en `src/cuypilot/targets.py`. No copies el catálogo para añadir destinos.
+Prueba frontmatter adaptado, referencias a scripts, coexistencia de locks y protección de cambios locales.
+Las tools pueden declarar `configure_targets` y `uninstall_targets` para sustituir comandos por destino;
+las sustituciones deben tener las mismas reglas de seguridad que los comandos originales.
+
+Un cambio de adaptación que conserva la pieza fuente se versiona con el wheel y se detecta por los
+hashes renderizados. Si cambia la fuente de una pieza, sube también su versión. La versión de una tool
+representa el programa externo fijado: cambiar su integración no inventa una versión del paquete upstream.
+Los despliegues Genie se prueban con un ejecutor simulado sin credenciales; registra por separado cualquier
+validación realizada en un workspace real. No confundir archivos generados con comportamiento comprobado
+por un LLM. Consulta RFC-005 y `docs/multiples-asistentes.md`.
 
 ## Versionado
 

@@ -142,3 +142,59 @@ def test_run_command_finds_tools_in_inactive_venv(tmp_path, monkeypatch):
 
     assert workspace.run_command(("faketool", "--version"), tmp_path) == (0, "faketool 9.9.9\n")
     assert workspace.run_command(("nope",), tmp_path)[0] == 127
+
+
+def test_current_environment_takes_precedence_over_path(tmp_path, monkeypatch):
+    from cuypilot import workspace
+
+    calls = []
+    monkeypatch.setattr(
+        workspace.shutil,
+        "which",
+        lambda name, path=None: (calls.append(path), str(tmp_path / "local-tool") if path else "/other/tool")[
+            1
+        ],
+    )
+    monkeypatch.setattr(
+        workspace.subprocess,
+        "run",
+        lambda cmd, **kw: type("Result", (), {"returncode": 0, "stdout": cmd[0], "stderr": ""})(),
+    )
+    assert workspace.run_command(("tool",), tmp_path)[1] == str(tmp_path / "local-tool")
+    assert len(calls) == 1 and calls[0] is not None
+
+
+def test_graphify_opencode_never_modifies_copilot_user_integration(tmp_path):
+    calls = []
+
+    def run(cmd, cwd):
+        if cmd[1:] == ("--version",):
+            return 0, "graphify 0.9.73"
+        calls.append(cmd)
+        return 0, ""
+
+    workspace = Workspace(
+        tmp_path, load_catalog(), "0.5.0", target="opencode", run=run, confirm=lambda commands: True
+    )
+    workspace.add(["graphify"])
+    assert calls == [("graphify", "update", ".")]
+    assert "graphify update" in (tmp_path / "AGENTS.md").read_text()
+    workspace.remove(["graphify"])
+    assert calls == [("graphify", "update", ".")]
+    assert not (tmp_path / ".github").exists()
+
+
+def test_tool_integration_change_is_outdated_without_program_version_change(tmp_path, catalog_dir):
+    from dataclasses import replace
+
+    shell = FakeShell(installed="1.2.3")
+    workspace = ws(tmp_path, catalog_dir, shell)
+    workspace.add(["faketool"])
+    workspace.catalog["faketool"] = replace(
+        workspace.catalog["faketool"], configure=(("faketool", "refresh"),)
+    )
+    assert workspace.status()["faketool"] == "desactualizada"
+    shell.calls.clear()
+    workspace.update()
+    assert shell.calls == [("faketool", "refresh")]
+    assert workspace.status()["faketool"] == "ok"

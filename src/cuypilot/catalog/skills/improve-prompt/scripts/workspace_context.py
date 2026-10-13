@@ -98,13 +98,15 @@ def summarize(root: Path) -> list[str]:
     if any(PYSPARK_IMPORT.search(p.read_text(encoding="utf-8", errors="ignore")) for p in py_files[:500]):
         lines.append("uses: pyspark")
 
-    lock = root / ".github" / "cuypilot.lock.json"
-    if lock.exists():
-        items = json.loads(lock.read_text(encoding="utf-8"))["items"]
-        pieces = [f"{name} ({item['type']})" for name, item in items.items()]
-        lines.append(f"cuypilot pieces: {', '.join(pieces)}")
-    if (root / ".github" / "copilot-instructions.md").exists():
-        lines.append("instructions: .github/copilot-instructions.md present")
+    for directory, target in ((".github", "copilot"), (".opencode", "opencode"), (".assistant", "genie")):
+        lock = root / directory / "cuypilot.lock.json"
+        if lock.exists():
+            items = json.loads(lock.read_text(encoding="utf-8"))["items"]
+            pieces = [f"{name} ({item['type']})" for name, item in items.items()]
+            lines.append(f"cuypilot pieces: {', '.join(pieces)} [{target}]")
+    for relative in (".github/copilot-instructions.md", "AGENTS.md"):
+        if (root / relative).exists():
+            lines.append(f"instructions: {relative} present")
     return lines
 
 
