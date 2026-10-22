@@ -9,6 +9,9 @@ necesita**, que quedan versionadas en su propio repositorio.
 
 📘 **[Guía de usuario](docs/guia-usuario.md)**: instalación, uso, catálogo completo, solución de problemas.
 
+**[Lineamientos de uso, mantenimiento y aportes](docs/gobernanza.md)**: responsabilidades del equipo,
+uso diario, revisión de contribuciones, actualizaciones y publicación.
+
 ## Instalación
 
 Requisitos: Python ≥3.11, pip y el asistente que vayas a usar. **No necesita uv ni pipx.**

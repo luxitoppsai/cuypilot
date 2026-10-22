@@ -1,5 +1,8 @@
 # Guía de usuario de cuypilot
 
+Para trabajar con el catálogo en equipo, consulta los
+[lineamientos de uso, mantenimiento y aportes](gobernanza.md).
+
 > Desde 0.5.0 el mismo wheel soporta Copilot, OpenCode y Genie Code. Esta guía describe el uso original
 > de Copilot. Para destinos, versiones y despliegue Databricks, consulta
 > [la guía de múltiples asistentes](multiples-asistentes.md). El wizard pregunta primero el asistente.

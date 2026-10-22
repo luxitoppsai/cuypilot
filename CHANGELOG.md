@@ -2,6 +2,12 @@
 
 Formato: [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado: semver (ver `CONTRIBUTING.md`).
 
+## [Unreleased]
+
+### Documentación
+- Lineamientos de uso, mantenimiento y aportes: responsabilidades, uso diario, flujo de contribución,
+  rutina de revisión, publicación, incidentes y acuerdos pendientes del equipo.
+
 ## [0.5.1] - 2026-10-08
 
 ### Corregido
