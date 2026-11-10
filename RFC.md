@@ -10,7 +10,6 @@ tags: [rfc, contrato]
 # RFC-001 — Base de cuypilot: catálogo versionado + CLI de instalación
 
 > Contrato de lo que se va a construir. **No se programa hasta que `estado: aceptado`.**
-> Investigación de soporte: [`docs/research/estado-del-arte.md`](docs/research/estado-del-arte.md).
 
 ## 1. Contexto y problema
 

@@ -13,6 +13,7 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado
 
 ### Eliminado
 - `uv.lock`: el proyecto se construye e instala solo con pip.
+- `docs/research/`: la investigación es material interno del equipo y no forma parte del repositorio.
 
 ## [0.5.1] - 2026-10-08
 
@@ -22,8 +23,7 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado
 - Validación de nombres del catálogo: sin guiones iniciales/finales ni consecutivos.
 
 ### Documentación
-- Evaluación de Copilot, OpenCode y Genie para gobernar un equipo de analytics, con evidencia y prioridades.
-- Guía de operación y registro de evaluaciones, PR con resultados por destino y RFC-006 propuesto.
+- Guía de operación y registro de evaluaciones, y PR con resultados por destino.
 - Distinción entre catálogo versionado, compatibilidad y aprobación efectiva; responsables y reglas remotas pendientes.
 - Gobernanza como lineamientos Markdown; CODEOWNERS con plantilla para asignar responsables reales y enlaces desde README/CONTRIBUTING.
 

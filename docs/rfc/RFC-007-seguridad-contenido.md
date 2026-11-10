@@ -43,15 +43,16 @@ Investigación del 2026-11-10 (las cifras son de proveedores y no están verific
 
 ## Decisión propuesta
 
-Capas, de la más barata a la más cara. Todas corren en el CI de cada PR y las primeras también en local.
+Capas, de la más barata a la más cara. Todas son **informativas**: reportan hallazgos para el revisor y nunca bloquean un PR ni una instalación. La
+decisión sigue siendo humana. Corren en el CI de cada PR y las primeras también en local.
 
 ### 1. Auditoría determinista: `cuypilot audit`
 
 Un módulo con la librería estándar (sin dependencias nuevas) que recorre las piezas del catálogo y reporta
-hallazgos con identificador, severidad, archivo y línea. Sale con código distinto de cero si hay hallazgos
-`alta`; `--json` para máquinas.
+hallazgos con identificador, prioridad orientativa, archivo y línea. Siempre termina con código 0;
+`--json` para máquinas.
 
-| Familia | Qué detecta | Severidad |
+| Familia | Qué detecta | Prioridad |
 |---|---|---|
 | Texto oculto | Caracteres Unicode de formato, dirección y bloque Tag (U+E0000–E007F); comentarios HTML con contenido (salvo los marcadores `cuypilot:` y las licencias de terceros); bloques base64 o hexadecimales largos | alta |
 | Inyección | Frases como "ignore previous instructions", "ignora las instrucciones anteriores", "no se lo digas al usuario", "sin pedir confirmación", "no menciones" (español e inglés) | alta |
@@ -62,15 +63,14 @@ hallazgos con identificador, severidad, archivo y línea. Sale con código disti
 | Frontmatter | Claves fuera del conjunto permitido; `tools` más amplio que lo declarado | media |
 | Nombres | Nombre a distancia de edición ≤2 de otra pieza (suplantación) | media |
 
-La lista de dominios permitidos y las excepciones justificadas viven en `catalog.toml`
-(`[audit] allowed_domains` y `allow = [{ id, razón }]` por pieza). Como `catalog.toml` está en CODEOWNERS, toda
-excepción pasa por revisión.
+La prioridad (`alta` o `media`) solo ayuda al revisor a decidir qué mirar primero. Las URLs se listan tal
+cual se encuentran, sin lista de dominios permitidos: el revisor decide si son legítimas.
 
 ### 2. Capacidades declaradas
 
 Cada pieza declara en `catalog.toml` lo que puede hacer: `capabilities = ["scripts", "network", "tools"]`
-(vacío por defecto). La auditoría compara lo declarado con lo detectado: una capacidad detectada y no
-declarada es un hallazgo alto. Así el revisor ve de un vistazo qué privilegios pide cada PR.
+(vacío por defecto). La auditoría compara lo declarado con lo detectado y reporta las discrepancias. Así el
+revisor ve de un vistazo qué privilegios pide cada PR.
 
 ### 3. Escáner externo en el CI
 
@@ -78,16 +78,13 @@ Evaluar [Cisco skill-scanner](https://github.com/cisco-ai-defense/skill-scanner)
 independiente de nuestras reglas. Datos verificados el 2026-11-10: código abierto con **licencia Apache-2.0**
 (archivo `LICENSE`; la API de GitHub la informa como "NOASSERTION"), activo, con soporte para CI. Combina
 reglas YAML/YARA, análisis de flujo de datos sobre los scripts y un juez LLM opcional. Se usaría **solo con
-los modos que no necesitan LLM ni salida a red**. Entra primero como paso informativo; pasa a bloqueante
-cuando se mida su ruido contra las piezas actuales.
+los modos que no necesitan LLM ni salida a red**, como paso informativo del CI.
 
 ### 4. Integridad de lo que se instala
 
 - El lockfile ya guarda el hash de cada archivo y `cuypilot status` detecta ediciones locales y cambios del
   catálogo: no se agrega nada.
-- Cada release publica el `sha256` del wheel junto al artifact. Los proyectos consumidores pueden fijarlo con
-  `pip install --require-hashes` (mecanismo nativo de pip), sin código nuevo.
-- Evaluar las atestaciones de procedencia de GitHub Actions si el GitHub Enterprise de la organización las ofrece.
+- Cada release publica el `sha256` del wheel junto al artifact, para poder comprobarlo.
 
 ### 5. Revisión humana
 
@@ -105,14 +102,16 @@ registra una excepción justificada.
 
 ## Alcance
 
-**Entra:** `cuypilot audit`, capacidades declaradas, evaluación del escáner de Cisco en el CI, hash del wheel en
-cada release, pruebas con piezas maliciosas de ejemplo, actualización del checklist de PR y de las guías.
+**Entra:** `cuypilot audit` (informativo), capacidades declaradas, el escáner de Cisco como paso informativo del
+CI, hash del wheel en cada release, pruebas con piezas maliciosas de ejemplo y actualización del checklist de PR.
 
 **No entra:**
 - Un LLM como juez de la prosa: se deja para una fase posterior.
 - Control en ejecución (hooks, restricción de red, herramientas permitidas): depende del asistente y de la
   configuración de la organización.
 - Un marketplace o registro con niveles de confianza, y la firma de piezas individuales.
+- Bloquear PRs o instalaciones por hallazgos.
+- Atestaciones de procedencia y fijar hashes en los proyectos consumidores.
 - Cambios en dónde se instalan las piezas o en si se versionan.
 
 ## Alternativas descartadas
@@ -124,18 +123,16 @@ cada release, pruebas con piezas maliciosas de ejemplo, actualización del check
 
 ## Criterios de aceptación
 
-1. `cuypilot audit` pasa sobre el catálogo actual y rechaza cada pieza maliciosa de ejemplo con su identificador.
-2. El CI falla en un PR que agrega una pieza con un hallazgo alto y muestra el informe en el resumen del job.
-3. Una capacidad detectada y no declarada falla; declararla la deja pasar y visible en el PR.
+1. `cuypilot audit` reporta, con su identificador, cada hallazgo de las piezas maliciosas de ejemplo y no
+   reporta nada grave sobre el catálogo actual (o cada hallazgo está explicado).
+2. El CI muestra el informe en el resumen del job de cada PR y no falla por los hallazgos.
+3. Las discrepancias entre capacidades declaradas y detectadas aparecen en el informe.
 4. Cada release adjunta el `sha256` del wheel.
-5. El checklist de PR y las guías describen la auditoría y cómo registrar una excepción.
+5. El checklist de PR describe la auditoría y cómo leer el informe.
 6. `pytest`, `ruff check` y `ruff format --check` pasan; los scripts del catálogo siguen cumpliendo sus reglas.
 
-## Preguntas abiertas
+## Decisiones tomadas
 
-1. **Severidades:** ¿bloquean solo los hallazgos `alta` y los `media` avisan? Es la propuesta de este borrador.
-2. **Escáner de Cisco:** ¿informativo al principio y bloqueante después de medir su ruido, o bloqueante desde el inicio?
-3. **Dominios permitidos:** ¿qué dominios de documentación pueden aparecer en las piezas además de los de los
-   proyectos de origen (GitHub, docs de Databricks, Sphinx, PyPI)?
-4. **Atestaciones y `--require-hashes`:** ¿el GitHub Enterprise de la organización ofrece las atestaciones de
-   procedencia, y los proyectos consumidores aceptan fijar el hash en `requirements-dev.txt`?
+- Todo es informativo: ningún hallazgo bloquea.
+- No hay lista de dominios permitidos ni excepciones: las URLs se listan y el revisor decide.
+- Las atestaciones de procedencia y el hash fijado en los consumidores quedan fuera de esta RFC.

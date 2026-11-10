@@ -59,4 +59,3 @@ corregir bugs o mejorar documentación; sí para afirmar gobernanza efectiva y d
 3. Metadatos, controles de promoción y wheel en PR; canal de distribución acordado.
 4. Mejoras de wizard/diagnóstico y publicación workspace Genie, basadas en el piloto.
 
-Fuentes y hallazgos: [evaluación](../research/evaluacion-gobernanza-analytics.md).
