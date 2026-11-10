@@ -1,6 +1,6 @@
 ---
 rfc: RFC-008
-estado: en-revision   # borrador | en-revision | aceptado | rechazado | superado
+estado: aceptado   # borrador | en-revision | aceptado | rechazado | superado
 fecha: 2026-11-10
 ---
 
