@@ -6,6 +6,9 @@ on:
     branches: [main, master, develop]
     tags: ["v*"]
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -59,12 +62,17 @@ jobs:
           path: dist
       - name: Publicar la Release con el wheel y su checksum
         run: |
-          if gh release view "${GITHUB_REF_NAME}" > /dev/null 2>&1; then
-            echo "La Release ${GITHUB_REF_NAME} ya existe: los wheels publicados no se modifican."
-            exit 0
-          fi
           version="${GITHUB_REF_NAME#v}"
           (cd dist && sha256sum *.whl > SHA256SUMS)
           awk -v v="${version}" '$0 ~ "^## \\["v"\\]"{f=1;next} /^## \[/{f=0} f' CHANGELOG.md | sed '/./,$!d' > notes.md
-          gh release create "${GITHUB_REF_NAME}" dist/*.whl dist/SHA256SUMS \
-            --title "cuypilot ${version}" --notes-file notes.md --verify-tag
+          test -s notes.md || { echo "Falta la sección ## [${version}] en CHANGELOG.md"; exit 1; }
+          if gh release view "${GITHUB_REF_NAME}" > /dev/null 2>&1; then
+            # Los wheels publicados no se sobrescriben: solo se completan los archivos que falten.
+            existing=$(gh release view "${GITHUB_REF_NAME}" --json assets --jq '.assets[].name')
+            for f in dist/*.whl dist/SHA256SUMS; do
+              echo "${existing}" | grep -qx "$(basename "$f")" || gh release upload "${GITHUB_REF_NAME}" "$f"
+            done
+          else
+            gh release create "${GITHUB_REF_NAME}" dist/*.whl dist/SHA256SUMS \
+              --title "cuypilot ${version}" --notes-file notes.md --verify-tag
+          fi

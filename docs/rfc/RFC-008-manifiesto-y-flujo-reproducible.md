@@ -27,7 +27,7 @@ según su documentación oficial al 2026-11-10 (el contrato de su manifiesto fig
 | `apm deps why` explica por qué hay una dependencia | `remove` falla indicando quién depende | Sí: `cuypilot why` |
 | `apm install <pkg>` agrega la entrada al manifiesto y revierte si falla | `add` instala y revierte archivos, sin manifiesto | Sí: `add` y `remove` editan el manifiesto |
 | `apm audit --ci`: comprobaciones de consistencia sin configuración | — | Sí: `audit --ci` (ver RFC-007) |
-| Escaneo de Unicode oculto en cada instalación | — | Sí, informativo (RFC-007) |
+| Escaneo de Unicode oculto en cada instalación | — | Solo en `audit` (RFC-007); `install` no escanea |
 | `apm-policy.yml`: permitir o denegar fuentes, exigir piezas, heredado por organización | — | No entra (decisión 2) |
 | Fuentes git arbitrarias, registros y marketplaces | El catálogo viaja en el wheel | No entra |
 
@@ -69,7 +69,8 @@ con los comandos actuales; `cuypilot install` crea el manifiesto a partir de lo 
 Con `install --frozen` y `audit --ci` un proyecto puede exigir en sus PRs que las piezas commiteadas no se
 hayan editado a mano ni se hayan quitado, y que coincidan con el manifiesto. Con `master` y `develop`
 protegidas y checks requeridos, es lo que hace efectiva la constancia de qué piezas se usan. La guía incluye un
-fragmento de workflow listo para copiar.
+fragmento de workflow listo para copiar; descarga el wheel de la Release con el token del repositorio o de la
+organización, que un repo privado necesita.
 
 ### 4. Detección de destinos
 

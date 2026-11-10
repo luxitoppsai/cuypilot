@@ -49,7 +49,9 @@ decisión sigue siendo humana. Corren en el CI de cada PR y las primeras tambié
 ### 1. Auditoría determinista: `cuypilot audit`
 
 Un módulo con la librería estándar (sin dependencias nuevas) que recorre las piezas del catálogo y reporta
-hallazgos con identificador, prioridad orientativa, archivo y línea. Siempre termina con código 0;
+hallazgos con identificador, prioridad orientativa, archivo y línea. Los hallazgos de contenido nunca cambian el
+código de salida (siempre 0); solo `audit --ci`, de la RFC-008, devuelve un código distinto de cero y únicamente
+por inconsistencias de lockfile o archivos gestionados;
 `--json` para máquinas.
 
 | Familia | Qué detecta | Prioridad |
@@ -57,7 +59,7 @@ hallazgos con identificador, prioridad orientativa, archivo y línea. Siempre te
 | Texto oculto | Caracteres Unicode de formato, dirección y bloque Tag (U+E0000–E007F); comentarios HTML con contenido (salvo los marcadores `cuypilot:` y las licencias de terceros); bloques base64 o hexadecimales largos | alta |
 | Inyección | Frases como "ignore previous instructions", "ignora las instrucciones anteriores", "no se lo digas al usuario", "sin pedir confirmación", "no menciones" (español e inglés) | alta |
 | Acceso sensible | Referencias a `.env`, `~/.ssh`, claves privadas, `credentials`, volcado de variables de entorno | alta |
-| Red y exfiltración | URLs fuera de la lista permitida; `curl`, `wget`, `Invoke-WebRequest`, `\| sh`; `pip install` de paquetes no declarados | media |
+| Red y exfiltración | URLs externas (se listan todas); `curl`, `wget`, `Invoke-WebRequest`, `\| sh`; `pip install` de paquetes no declarados | media |
 | Ejecución en scripts | Por AST: `eval`, `exec`, `compile`, `__import__`, `subprocess`, `os.system`, `shell=True`, `pickle`, módulos de red, escritura de archivos | alta |
 | Persistencia | Instrucciones que piden escribir o modificar `AGENTS.md`, `copilot-instructions.md`, `.github/`, `.vscode/` o ajustes de aprobación automática | alta |
 | Frontmatter | Claves fuera del conjunto permitido; `tools` más amplio que lo declarado | media |
@@ -84,7 +86,7 @@ los modos que no necesitan LLM ni salida a red**, como paso informativo del CI.
 
 - El lockfile ya guarda el hash de cada archivo y `cuypilot status` detecta ediciones locales y cambios del
   catálogo: no se agrega nada.
-- Cada release publica el `sha256` del wheel junto al artifact, para poder comprobarlo.
+- Cada Release publica el `sha256` del wheel en `SHA256SUMS`: ya existe en el CI.
 
 ### 5. Revisión humana
 
@@ -98,12 +100,12 @@ configura en el proveedor.
 Un directorio de **piezas maliciosas de ejemplo** (una por familia de la tabla) que la auditoría debe rechazar
 con el identificador esperado, y las piezas actuales del catálogo, que deben pasar. Las piezas de terceros
 (ponytail, superpowers, awesome-copilot) se auditan igual: si alguna da un hallazgo legítimo, se corrige o se
-registra una excepción justificada.
+se explica en el PR.
 
 ## Alcance
 
 **Entra:** `cuypilot audit` (informativo), capacidades declaradas, el escáner de Cisco como paso informativo del
-CI, hash del wheel en cada release, pruebas con piezas maliciosas de ejemplo y actualización del checklist de PR.
+CI, pruebas con piezas maliciosas de ejemplo y actualización del checklist de PR.
 
 **No entra:**
 - Un LLM como juez de la prosa: se deja para una fase posterior.
@@ -127,9 +129,8 @@ CI, hash del wheel en cada release, pruebas con piezas maliciosas de ejemplo y a
    reporta nada grave sobre el catálogo actual (o cada hallazgo está explicado).
 2. El CI muestra el informe en el resumen del job de cada PR y no falla por los hallazgos.
 3. Las discrepancias entre capacidades declaradas y detectadas aparecen en el informe.
-4. Cada release adjunta el `sha256` del wheel.
-5. El checklist de PR describe la auditoría y cómo leer el informe.
-6. `pytest`, `ruff check` y `ruff format --check` pasan; los scripts del catálogo siguen cumpliendo sus reglas.
+4. El checklist de PR describe la auditoría y cómo leer el informe.
+5. `pytest`, `ruff check` y `ruff format --check` pasan; los scripts del catálogo siguen cumpliendo sus reglas.
 
 ## Decisiones tomadas
 

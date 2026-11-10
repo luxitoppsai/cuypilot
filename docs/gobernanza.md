@@ -121,8 +121,8 @@ hereden las instrucciones. Si el modelo no revela qué skill cargó, se registra
 | En cada proyecto consumidor | Leer las notas de versión, actualizar en una rama, revisar `status` y el diff, probar y abrir un PR. | PR de actualización con archivos y lockfile |
 
 El CI ejecuta `ruff check .`, `ruff format --check .` y `pytest -q` con Python 3.11, 3.12 y 3.13. Cuando
-cambian el empaquetado, la CLI, las herramientas o las adaptaciones, además se instala y actualiza desde el
-wheel en un proyecto aislado.
+cambian el empaquetado, la CLI, las herramientas o las adaptaciones, quien revisa además instala y actualiza
+desde el wheel en un proyecto aislado: el CI no lo hace.
 
 Se publica un wheel inmutable por versión, como archivo de su Release. Si la Release ya existe, el CI no la modifica.
 La creación de tags `v*` conviene limitarla a los mantenedores con una regla de tags del proveedor: de ellos depende qué código se publica. Lo experimental no se publica como aprobado. Un incidente identifica

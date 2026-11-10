@@ -12,6 +12,6 @@ de cada proyecto.
 | Cómo trabaja el equipo | [docs/gobernanza.md](docs/gobernanza.md) |
 | Cómo contribuir | [CONTRIBUTING.md](CONTRIBUTING.md) |
 | Cambios por versión | [CHANGELOG.md](CHANGELOG.md) |
-| Decisiones y contratos | [RFC-001](RFC.md), [RFC-002](docs/rfc/RFC-002-integraciones-terceros.md), [RFC-003](docs/rfc/RFC-003-contenido-dominio.md), [RFC-004](docs/rfc/RFC-004-seguridad-wizard.md), [RFC-005](docs/rfc/RFC-005-multiples-asistentes.md) |
+| Decisiones y contratos | [RFC-001](RFC.md), [RFC-002](docs/rfc/RFC-002-integraciones-terceros.md), [RFC-003](docs/rfc/RFC-003-contenido-dominio.md), [RFC-004](docs/rfc/RFC-004-seguridad-wizard.md), [RFC-005](docs/rfc/RFC-005-multiples-asistentes.md), [RFC-006](docs/rfc/RFC-006-gobernanza-analytics.md), [RFC-007](docs/rfc/RFC-007-seguridad-contenido.md), [RFC-008](docs/rfc/RFC-008-manifiesto-y-flujo-reproducible.md) |
 
 Las causas de bugs y las decisiones se documentan junto al código: en los RFC y en el CHANGELOG.

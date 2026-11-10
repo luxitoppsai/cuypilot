@@ -12,7 +12,7 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado
   existe y cómo se trabaja: versión 0.5.1, `<ruta-del-wheel>` explicado, sin referencias a propuestas.
 - `docs/gobernanza.md` pasa a "Cómo trabajamos": roles, uso diario, flujo de contribución, evaluaciones,
   publicación y mantenimiento.
-- RFC-007 (seguridad del contenido) en borrador.
+- CODEOWNERS y plantilla de PR ajustados.
 
 ### Eliminado
 - `uv.lock`: el proyecto se construye e instala solo con pip.
