@@ -106,13 +106,3 @@ python -m build                # genera dist/cuypilot-X.Y.Z-py3-none-any.whl
 ```
 
 El CI ejecuta lo mismo con Python 3.11, 3.12 y 3.13, y construye el wheel cuando se publica un tag `vX.Y.Z`.
-
-## Decisiones de diseño
-
-Los contratos están en el repositorio:
-[RFC-001](RFC.md) (catálogo y CLI),
-[RFC-002](docs/rfc/RFC-002-integraciones-terceros.md) (scripts, terceros y herramientas),
-[RFC-003](docs/rfc/RFC-003-contenido-dominio.md) (PySpark, ML y documentación),
-[RFC-004](docs/rfc/RFC-004-seguridad-wizard.md) (operaciones seguras y wizard) y
-[RFC-005](docs/rfc/RFC-005-multiples-asistentes.md) (varios asistentes).
-La investigación inicial está en [`docs/research/estado-del-arte.md`](docs/research/estado-del-arte.md).

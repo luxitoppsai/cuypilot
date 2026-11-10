@@ -1,9 +1,7 @@
 # Contribuir a cuypilot
 
 Lee primero [cómo trabajamos](docs/gobernanza.md): roles, evidencia de evaluación, publicación y
-mantenimiento. Los revisores de cada ruta se definen en [CODEOWNERS](.github/CODEOWNERS). Un cambio de
-funcionalidad o de arquitectura empieza con un RFC en `docs/rfc/`; una corrección pequeña o de
-documentación solo necesita un PR.
+mantenimiento. Los revisores de cada ruta se definen en [CODEOWNERS](.github/CODEOWNERS).
 
 ## Agregar o modificar una pieza
 
@@ -81,7 +79,7 @@ hashes renderizados. Si cambia la fuente de una pieza, sube también su versión
 representa el programa externo fijado: cambiar su integración no inventa una versión del paquete upstream.
 Los despliegues Genie se prueban con un ejecutor simulado sin credenciales; registra por separado cualquier
 validación realizada en un workspace real. No confundir archivos generados con comportamiento comprobado
-por un LLM. Consulta RFC-005 y `docs/multiples-asistentes.md`.
+por un LLM. Consulta `docs/multiples-asistentes.md`.
 
 ## Versionado
 

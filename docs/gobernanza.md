@@ -59,10 +59,10 @@ obligatoria en la protección de rama, que es lo que hace efectivo el requisito 
 Se aceptan piezas nuevas, correcciones de contenido, de la CLI o de los adaptadores, documentación y casos de
 evaluación.
 
-1. Revisa el catálogo y los RFC para no duplicar. Describe el problema, a quién afecta y el resultado esperado.
-2. Si el cambio es una función significativa o de arquitectura, escribe primero un RFC (problema, alcance,
-   alternativas, criterios de aceptación) y acuérdalo. Una corrección pequeña o de documentación solo
-   necesita un PR de alcance claro.
+1. Revisa el catálogo para no duplicar. Describe el problema, a quién afecta y el resultado esperado.
+2. Si el cambio es una función significativa o de arquitectura, documenta primero el problema, el alcance, las
+   alternativas y los criterios de aceptación, y acuérdalo con el equipo. Una corrección pequeña o de
+   documentación solo necesita un PR de alcance claro.
 3. Trabaja en una rama y limita el cambio a su objetivo. [CONTRIBUTING.md](../CONTRIBUTING.md) fija rutas,
    versiones, licencias, scripts y comprobaciones.
 4. Adjunta evidencia proporcional: una corrección de documentación no requiere ejecutar modelos; una pieza o
