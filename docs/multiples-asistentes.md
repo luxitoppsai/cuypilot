@@ -9,7 +9,7 @@ que indiques con `--path` (por defecto, el directorio actual).
 En el entorno virtual de desarrollo:
 
 ```bash
-pip install <ruta>/cuypilot-0.5.1-py3-none-any.whl
+pip install <ruta-del-wheel>/cuypilot-0.5.1-py3-none-any.whl
 cuypilot init
 ```
 
@@ -45,7 +45,7 @@ incompatibles; intentar agregarlas aborta antes de ejecutar instaladores o copia
 | Bloque base | `.github/copilot-instructions.md` | Bloque propio en `AGENTS.md` | Bloque propio en `AGENTS.md` |
 | Lockfile | `.github/cuypilot.lock.json` | `.opencode/cuypilot.lock.json` | `.assistant/cuypilot.lock.json` |
 
-Versiona estas carpetas y `AGENTS.md` cuando corresponda. Las adaptaciones conservan scripts, recursos,
+Haz commit de estas carpetas y de `AGENTS.md` cuando corresponda: queda constancia de qué piezas usa el proyecto. Las adaptaciones conservan scripts, recursos,
 licencias y dependencias. Los ejemplos de scripts cambian al destino correcto; ejecuta los comandos de
 esos ejemplos desde la raíz del proyecto. Los archivos del catálogo original permanecen intactos.
 

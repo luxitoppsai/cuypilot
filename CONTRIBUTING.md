@@ -1,9 +1,9 @@
 # Contribuir a cuypilot
 
-Lee primero los [lineamientos de gobernanza](docs/gobernanza.md): responsabilidades, evidencia de
-evaluación y mantenimiento. Las asignaciones de revisores se documentan en
-[CODEOWNERS](.github/CODEOWNERS); completar la plantilla y exigir aprobación requiere responsables
-reales y configuración del proveedor. El RFC-006 recoge mejoras futuras, no requisitos técnicos ya implementados.
+Lee primero [cómo trabajamos](docs/gobernanza.md): roles, evidencia de evaluación, publicación y
+mantenimiento. Los revisores de cada ruta se definen en [CODEOWNERS](.github/CODEOWNERS). Un cambio de
+funcionalidad o de arquitectura empieza con un RFC en `docs/rfc/`; una corrección pequeña o de
+documentación solo necesita un PR.
 
 ## Agregar o modificar una pieza
 
@@ -18,7 +18,7 @@ reales y configuración del proveedor. El RFC-006 recoge mejoras futuras, no req
 2. Regístrala en `src/cuypilot/catalog/catalog.toml` con `type`, `version`, `description` y, si aplica, `owner` y `requires`.
 3. Si es una skill o un agente, crea `evals/<name>.json` con al menos 3 casos, incluyendo `trigger` y `no-trigger` (ver los existentes).
 4. Corre `pytest` (valida el catálogo) y `ruff check .` (instala lo necesario con `pip install -e . --group dev`).
-5. Prueba cada destino declarado en un proyecto sintético: `pip install -e <ruta-a-cuypilot>` y `cuypilot add <name> --target <destino>`. Registra evals con cliente/modelo, versiones y evidencia según la [guía de gobernanza](docs/gobernanza.md#registrar-evaluaciones); distingue resultados reales de pruebas de archivos.
+5. Prueba cada destino declarado en un proyecto sintético: `pip install -e <carpeta-de-este-repo>` y `cuypilot add <name> --target <destino>`. Registra evals con cliente/modelo, versiones y evidencia según la [guía de gobernanza](docs/gobernanza.md#registrar-evaluaciones); distingue resultados reales de pruebas de archivos.
 6. Abre un PR y completa el checklist.
 
 ## Reglas de contenido

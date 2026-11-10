@@ -1,16 +1,11 @@
 # Guía de usuario de cuypilot
 
-Para trabajar con el catálogo en equipo, consulta los
-[lineamientos de uso, mantenimiento y aportes](gobernanza.md).
-
-> Desde 0.5.0 el mismo wheel soporta Copilot, OpenCode y Genie Code. Esta guía describe el uso original
-> de Copilot. Para destinos, versiones y despliegue Databricks, consulta
-> [la guía de múltiples asistentes](multiples-asistentes.md). El wizard pregunta primero el asistente.
-
-
-cuypilot instala en tu proyecto **skills, agents, instructions y herramientas para GitHub Copilot en
-VS Code**, elegidas y revisadas por el equipo. Esta guía explica cómo instalarlo, cómo usarlo en el día
-a día y qué cambia en tu repositorio.
+cuypilot instala en tu proyecto **skills, agents, instructions y herramientas** para GitHub Copilot en
+VS Code, OpenCode y Genie Code de Databricks, elegidas y revisadas por el equipo. Esta guía explica cómo
+instalarlo, cómo usarlo en el día a día y qué cambia en tu repositorio. Los ejemplos usan Copilot, que es el
+destino por defecto; qué instala cada asistente y cómo publicar en Genie está en
+[varios asistentes](multiples-asistentes.md). Cómo trabaja el equipo con el catálogo está en
+[cómo trabajamos](gobernanza.md).
 
 **Contenido**
 
@@ -35,7 +30,7 @@ a día y qué cambia en tu repositorio.
 | Necesitas | Para qué |
 |---|---|
 | Python **3.11 o superior** | Ejecutar la CLI `cuypilot` y los scripts de las skills |
-| VS Code con **GitHub Copilot Chat** | Usar lo que instala cuypilot |
+| Un asistente: VS Code con **GitHub Copilot Chat**, OpenCode o Genie Code | Usar lo que instala cuypilot |
 | `pip` y un entorno virtual (`python -m venv`) | Instalar el wheel y las herramientas opcionales. **No hace falta uv ni pipx** |
 | Java (JDK 17) | Solo para correr tests de PySpark en tu máquina (`pyspark-testing`) |
 
@@ -44,15 +39,16 @@ Las skills de PySpark asumen **Databricks Runtime 15.4 LTS o superior** (Spark �
 ## 2. Instalación
 
 cuypilot se instala como **dependencia de desarrollo**, en el **entorno virtual del proyecto** donde lo
-vas a usar. El wheel está disponible en `<ruta>`.
+vas a usar. `<ruta-del-wheel>` es el lugar donde tu equipo publica los wheels (una carpeta compartida, un
+índice interno de paquetes o el artifact que el CI genera en cada tag del repositorio de cuypilot).
 
 ```bash
 python -m venv .venv                     # si el proyecto aún no tiene entorno virtual
 source .venv/bin/activate                # Windows: .venv\Scripts\activate
-pip install <ruta>/cuypilot-0.3.2-py3-none-any.whl
+pip install <ruta-del-wheel>/cuypilot-0.5.1-py3-none-any.whl
 ```
 
-Agrega esa misma línea (la ruta del wheel) a tu `requirements-dev.txt`, para que el resto del equipo lo
+Agrega esa misma línea a tu `requirements-dev.txt`, para que el resto del equipo lo
 instale con `pip install -r requirements-dev.txt`.
 
 Comprueba que quedó instalado:
@@ -75,7 +71,8 @@ Desde **la raíz de tu repositorio**, ejecuta el wizard:
 cuypilot init        # o simplemente `cuypilot` en un repo sin piezas instaladas
 ```
 
-Verás el banner y la ruta del proyecto. El wizard tiene cuatro pasos:
+Verás el banner y la ruta del proyecto. Si no pasaste `--target`, primero eliges el asistente. El wizard tiene
+cuatro pasos:
 
 1. **Rol:** elige el perfil o la selección manual.
 2. **Selección:** muestra utilidad, tipo y piezas instaladas. Enter conserva las sugerencias;
@@ -83,7 +80,7 @@ Verás el banner y la ruta del proyecto. El wizard tiene cuatro pasos:
    se vuelven a pedir. Después ofrece las herramientas opcionales por separado.
 3. **Resumen:** incluye dependencias, versiones y comandos externos. Una confirmación final autoriza
    la instalación. Responder `n` cancela.
-4. **Instalación:** muestra el resultado y cómo usar cada tipo de pieza en Copilot.
+4. **Instalación:** muestra el resultado y cómo usar cada tipo de pieza en el asistente elegido.
 
 El texto se adapta al ancho de la terminal y `NO_COLOR` desactiva los colores.
 Ejemplo del primer paso:
@@ -94,7 +91,7 @@ Ejemplo del primer paso:
  / ___/ / / / / / / __ \/ / / __ \/ __/
 / /__/ /_/ / /_/ / /_/ / / / /_/ / /_
 \___/\__,_/\__, / .___/_/_/\____/\__/
-          /____/_/  v0.4.0 · skills, agents y herramientas para GitHub Copilot
+          /____/_/  v0.5.1 · skills, agents y herramientas para asistentes de IA
 
   ¿Cuál es tu rol?
     1) Desarrollador Python
@@ -105,7 +102,8 @@ Ejemplo del primer paso:
   >
 ```
 
-Sin preguntas (por ejemplo, en un script): `cuypilot init --role mle --yes`.
+Sin preguntas (por ejemplo, en un script): `cuypilot init --role mle --yes`. Con `--yes` no se instalan
+herramientas externas: elígelas explícitamente con `cuypilot add`.
 
 Si prefieres elegir pieza por pieza:
 
@@ -115,7 +113,8 @@ cuypilot add python-standards pyspark-optimize    # instala lo que elijas
 cuypilot status                                   # verifica
 ```
 
-En ambos casos, al terminar versiona lo instalado, así lo tiene todo el equipo:
+En ambos casos, al terminar haz commit de lo instalado: queda constancia de qué piezas y versiones usa el
+proyecto y todo el equipo las recibe con `git pull`:
 
 ```bash
 git add .github .gitignore
@@ -204,16 +203,18 @@ Herramientas opcionales para cualquier rol: `graphify` (repos grandes o desconoc
 
 | Comando | Qué hace |
 |---|---|
-| `cuypilot init [--role dev\|ds\|mle\|docs] [--yes]` | Wizard: elige tu rol e instala las piezas sugeridas |
+| `cuypilot init [--role dev\|ds\|mle\|docs] [--yes]` | Wizard: asistente, rol, selección editable, resumen e instalación |
 | `cuypilot list [--type skill\|agent\|instruction\|tool]` | Muestra el catálogo; `*` marca lo ya instalado en este repo |
 | `cuypilot add <nombre>... [--dry-run] [--yes] [--force]` | Instala piezas y sus dependencias |
 | `cuypilot status` | Estado de cada pieza instalada |
 | `cuypilot update [<nombre>...] [--yes] [--force]` | Actualiza a la versión del wheel instalado |
 | `cuypilot remove <nombre>... [--yes] [--force]` | Quita piezas; protege archivos editados |
+| `cuypilot deploy --workspace-path <carpeta> [--profile <perfil>] [--dry-run]` | Publica la instalación de Genie en un workspace de Databricks (ver [varios asistentes](multiples-asistentes.md)) |
 | `cuypilot --version` | Versión de cuypilot |
 
 Opciones:
 
+- `--target copilot\|opencode\|genie`: asistente destino (Copilot por defecto). `--path <carpeta>`: proyecto sobre el que se opera (por defecto, el directorio actual).
 - `--dry-run` (solo en `add`): muestra qué se instalaría y qué comandos se ejecutarían, **sin cambiar nada**.
 - `--yes`: no pide confirmación antes de ejecutar los comandos de una herramienta.
 - `--force`: en `add`, sobrescribe archivos que existían y no eran de cuypilot; en `update`, pisa piezas editadas y conflictos con recursos nuevos; en `remove`, elimina archivos editados. Revisa y respalda tus cambios antes.
@@ -230,6 +231,8 @@ Estados que muestra `status`:
 
 ## 7. Qué cambia en tu repositorio
 
+Con Copilot (el destino por defecto):
+
 | Archivo | Qué es | ¿Se versiona? |
 |---|---|---|
 | `.github/skills/<nombre>/` | Skills (con sus scripts y licencias) | Sí |
@@ -240,7 +243,8 @@ Estados que muestra `status`:
 | `.gitignore` | Líneas que agregan las herramientas (por ejemplo `graphify-out/`) | Sí |
 
 - **Todo lo que está fuera del bloque gestionado en `copilot-instructions.md` es tuyo:** cuypilot no lo toca.
-- Al versionar `.github/`, tus compañeros reciben las mismas piezas **aunque no tengan cuypilot instalado**.
+- Al hacer commit de `.github/`, tus compañeros reciben las mismas piezas **aunque no tengan cuypilot instalado**, y el historial de Git muestra qué versión de cada pieza se usó y cuándo cambió.
+- Para OpenCode (`.opencode/`, `AGENTS.md`) y Genie (`.assistant/`, `AGENTS.md`) las rutas están en [varios asistentes](multiples-asistentes.md).
 
 ## 8. Herramientas externas
 
@@ -329,13 +333,14 @@ Todos son **solo lectura**, usan solo la librería estándar de Python y no acce
 Cuando haya una versión nueva del wheel:
 
 ```bash
-pip install <ruta>/cuypilot-<nueva-versión>-py3-none-any.whl   # actualiza también requirements-dev.txt
+pip install <ruta-del-wheel>/cuypilot-<nueva-versión>-py3-none-any.whl   # actualiza también requirements-dev.txt
 cuypilot status       # mira qué cambió
 cuypilot update       # actualiza lo instalado
 git add .github && git commit -m "chore: update cuypilot pieces"
 ```
 
 `update` **no pisa** las piezas que editaste a mano (estado `modificada`); para forzarlo, usa `--force`.
+Instalar un wheel nuevo no cambia los archivos del proyecto: eso ocurre cuando ejecutas `cuypilot update`.
 Los cambios de cada versión están en el [`CHANGELOG.md`](../CHANGELOG.md).
 
 ## 11. Solución de problemas
@@ -355,7 +360,7 @@ Los cambios de cada versión están en el [`CHANGELOG.md`](../CHANGELOG.md).
 
 ## 12. Seguridad y datos
 
-- Todo el contenido del catálogo pasa por **revisión en un PR**, con un checklist de seguridad.
+- Todo el contenido del catálogo pasa por **revisión en un PR**, con un checklist de seguridad y un revisor distinto del autor.
 - Las piezas de terceros están fijadas a un **commit exacto** que fue revisado, con su licencia incluida.
 - cuypilot **solo ejecuta comandos** de herramientas definidas en el catálogo, **siempre te los muestra
   antes** y pide confirmación, y no usa un shell.

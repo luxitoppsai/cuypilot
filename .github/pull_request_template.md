@@ -10,7 +10,7 @@
 
 **Evals** (`evals/<pieza>.json`)
 - [ ] Casos actualizados (trigger, no-trigger, coexistencia/edge).
-- [ ] Probé cada destino declarado con `cuypilot add --target <destino>` y adjunté evidencia según `docs/gobernanza.md`; los destinos no ejecutados quedan identificados como pendientes.
+- [ ] Probé cada destino declarado con `cuypilot add --target <destino>` y adjunté evidencia según `docs/gobernanza.md`; los destinos no ejecutados quedan identificados como `no ejecutado`.
 - [ ] Registré wheel/pieza, cliente/modelo, entrada sintética, criterios observables, resultado y comparación con la versión anterior cuando corresponda.
 - [ ] Documenté uso, responsable propuesto, dependencias y diferencias de agents, instructions y permisos por destino.
 

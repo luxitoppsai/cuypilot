@@ -5,8 +5,14 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado
 ## [Unreleased]
 
 ### Documentación
-- Lineamientos de uso, mantenimiento y aportes: responsabilidades, uso diario, flujo de contribución,
-  rutina de revisión, publicación, incidentes y acuerdos pendientes del equipo.
+- README, guía de usuario, guía de varios asistentes, CONTRIBUTING y PROJECT reescritos para reflejar lo que
+  existe y cómo se trabaja: versión 0.5.1, `<ruta-del-wheel>` explicado, sin referencias a propuestas.
+- `docs/gobernanza.md` pasa a "Cómo trabajamos": roles, uso diario, flujo de contribución, evaluaciones,
+  publicación y mantenimiento.
+- RFC-007 (seguridad del contenido) en borrador.
+
+### Eliminado
+- `uv.lock`: el proyecto se construye e instala solo con pip.
 
 ## [0.5.1] - 2026-10-08
 

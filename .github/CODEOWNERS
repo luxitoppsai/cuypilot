@@ -1,7 +1,6 @@
-# Responsables de revisión: completar con usuarios/equipos reales con acceso de escritura.
-# Lineamientos: docs/gobernanza.md. Solo comentarios: todavía no asigna revisores.
-# Reemplaza los ejemplos antes de descomentarlos; no son identidades configuradas.
-# La aprobación obligatoria requiere además reglas de protección en el proveedor.
+# Revisores por ruta. Plantilla: al alojar el repo en la organización, reemplaza los ejemplos por
+# usuarios o equipos reales con acceso de escritura y descomenta las reglas.
+# La aprobación obligatoria se activa además en la protección de rama del proveedor (docs/gobernanza.md).
 # La última coincidencia prevalece: reglas generales primero, específicas después.
 #
 # *                                       @organizacion/mantenedores

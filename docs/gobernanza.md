@@ -1,113 +1,94 @@
-# Lineamientos de uso, mantenimiento y aportes a cuypilot
+# Cómo trabajamos con cuypilot
 
-Estos lineamientos orientan cómo contribuir, revisar y mantener el catálogo del equipo. No añaden
-controles automáticos ni requieren implementar ahora la evolución técnica del RFC-006.
+Este documento describe cómo se usa, se mejora y se mantiene el catálogo en equipo. La
+[guía de usuario](guia-usuario.md) explica los comandos y [CONTRIBUTING.md](../CONTRIBUTING.md) explica
+cómo se escribe una pieza.
 
-Hoy existen catálogo, versiones, locks, CI y plantilla
-de PR; responsables, reglas del proveedor y canal de distribución deben configurarse con datos reales.
-Consulta la [evaluación](research/evaluacion-gobernanza-analytics.md) para conocer las brechas y
-[RFC-006](rfc/RFC-006-gobernanza-analytics.md) para la evolución propuesta.
-
-## Alcance y responsabilidades
-
-Aplica a quienes consumen el catálogo en sus proyectos y a quienes mantienen sus piezas,
-adaptadores y CLI. La guía de usuario explica los comandos; este documento define cómo trabajar
-con ellos en equipo. Son acuerdos de trabajo que requieren revisión humana.
+## Roles
 
 | Rol | Responsabilidad |
 |---|---|
-| Usuario del catálogo | Elegir piezas, revisar los cambios y resultados del asistente, reportar problemas y mantener la instalación de su proyecto. |
+| Usuario del catálogo | Elegir piezas, revisar lo que genera el asistente, reportar problemas y mantener la instalación de su proyecto. |
 | Autor de un aporte | Definir el problema, implementar el cambio mínimo, documentarlo y adjuntar verificaciones reproducibles. |
-| Revisor de dominio | Evaluar utilidad, corrección, límites y convivencia con otras piezas; revisar evidencia de uso. |
-| Mantenedor | Revisar integridad del catálogo y CLI, coordinar versiones, distribución, actualizaciones y retiradas. |
-| Administrador del servicio | Configurar accesos y reglas del proveedor de Git o workspace cuando corresponda. |
+| Revisor de dominio | Evaluar utilidad, corrección, límites y convivencia con otras piezas. |
+| Mantenedor | Revisar la integridad del catálogo y la CLI, coordinar versiones, publicar y retirar piezas. |
+| Administrador del servicio | Configurar accesos, protección de ramas y reglas del proveedor de Git. |
 
-Una persona puede cubrir varios roles, pero la revisión de un aporte debe hacerla alguien distinto
-del autor. Cada proyecto consumidor decide quién coordina sus actualizaciones; no tiene que actualizar
-automáticamente cada vez que se publique un wheel.
+Una persona puede cubrir varios roles, pero la revisión de un aporte la hace alguien distinto de su autor.
+Cada proyecto consumidor decide quién coordina sus actualizaciones y cuándo: no tiene que actualizar cada
+vez que se publique un wheel.
 
-## Acuerdos de uso diario
+`.github/CODEOWNERS` define quién revisa cada ruta del repositorio. En este repositorio trae la plantilla
+comentada; al alojarlo en la organización se completa con los equipos reales y se activa la revisión
+obligatoria en la protección de rama, que es lo que hace efectivo el requisito de revisión independiente.
 
-- Instala solo las piezas necesarias para la tarea y usa la versión acordada en tu proyecto.
-  Comprueba el destino: una adaptación entre asistentes puede cambiar la forma de invocación.
-- Al pedir trabajo, indica objetivo, contexto, restricciones y cómo comprobar el resultado.
-  Para cambios amplios, acuerda alcance y criterios de aceptación antes de implementar.
-- Revisa el plan y los comandos que impliquen instalaciones, red, cambios de archivos o publicación.
-  Las piezas orientan al asistente; no sustituyen los permisos ni la aprobación de acciones.
-- Usa datos sintéticos o anonimizados para ejemplos y evaluaciones. No incluyas credenciales ni
-  datos internos sensibles en prompts, reportes o evidencias del catálogo.
-- Revisa el diff y ejecuta las comprobaciones pertinentes antes de aceptar código generado.
-  La activación de una skill y una respuesta convincente no demuestran que el resultado sea correcto.
-- Si necesitas adaptar una pieza localmente, conserva el cambio en Git y revisa `status` antes de
-  actualizar. Propón al catálogo las mejoras reutilizables; no edites el lock para ocultar diferencias.
-- Reporta resultados incorrectos, activaciones fuera de alcance e instrucciones contradictorias con
-  un caso reproducible. Suspende el uso de la pieza en la tarea afectada si compromete el resultado.
+## Uso diario
 
-## Responsables y contribución
+- Instala solo las piezas que necesitas y usa la versión acordada en tu proyecto. Muchas skills activas
+  compiten entre sí y el asistente elige peor.
+- Al pedir trabajo, indica objetivo, contexto, restricciones y cómo comprobar el resultado. Para cambios
+  amplios, acuerda el alcance antes de implementar (`/improve-prompt` ayuda a armar el pedido).
+- Revisa los comandos que impliquen instalar paquetes, usar la red, modificar archivos o publicar. Las piezas
+  orientan al asistente: no sustituyen los permisos ni la aprobación de cada acción.
+- Usa datos sintéticos o anonimizados en ejemplos y evaluaciones. No pongas credenciales ni datos internos
+  en prompts, reportes o evidencias.
+- Revisa el diff y ejecuta las pruebas antes de aceptar código generado. Que una skill se active y la
+  respuesta suene convincente no demuestra que el resultado sea correcto.
+- Si adaptas una pieza localmente, el cambio queda en Git y `status` la marca `modificada`. Si la mejora
+  sirve a todos, propónla al catálogo. No edites el lockfile para ocultar diferencias.
+- Reporta resultados incorrectos, activaciones fuera de alcance e instrucciones contradictorias con un caso
+  reproducible. Si una pieza compromete el resultado de tu tarea, deja de usarla en esa tarea.
 
-[CONTRIBUTING.md](../CONTRIBUTING.md) explica cómo agregar y modificar piezas;
-[CODEOWNERS](../.github/CODEOWNERS) contiene la plantilla de asignación de revisores.
-El equipo debe completar esa plantilla con usuarios o equipos reales con acceso al repositorio.
-Mientras solo contenga comentarios, no asigna revisores automáticamente.
-La revisión obligatoria se configura por separado en el proveedor de Git.
+## Usar el catálogo en un proyecto
 
-## Usar el catálogo
+1. Instala el wheel acordado en el entorno virtual del proyecto (no en el cliente del asistente) y agrégalo
+   a `requirements-dev.txt`.
+2. Ejecuta `cuypilot init --target copilot`, `opencode` o `genie`. Elige solo las piezas necesarias y revisa
+   las dependencias y los comandos de herramientas en el resumen.
+3. Comprueba con `cuypilot status --target <destino>`, abre el asistente y confirma que descubre la pieza.
+   En Genie registra la carpeta de skills y abre un chat nuevo; `AGENTS.md` se hereda solo dentro de su carpeta.
+4. Prueba un caso real con datos sintéticos y haz commit de los archivos instalados y del lockfile: es el
+   registro de qué piezas y versiones usa el proyecto.
+5. Para actualizar: instala el wheel nuevo en una rama, ejecuta `cuypilot update --target <destino>`, revisa
+   `status` y el diff, y abre un PR. En Genie remoto, revisa `deploy --dry-run` y publica después.
+6. Para retirar una pieza usa `remove`. Si tiene archivos editados, exige `--force` tras revisar y respaldar
+   tus cambios. Para volver atrás, instala el wheel anterior, revisa `status` y ejecuta `update`.
 
-1. Instala el wheel de la versión acordada en el entorno Python del proyecto; no necesitas instalar
-  cuypilot dentro del cliente LLM. Sigue la [guía de los tres asistentes](multiples-asistentes.md).
-2. Ejecuta `cuypilot init --target copilot`, `--target opencode` o `--target genie` en el proyecto.
-  Elige solo piezas que necesitas; revisa dependencias y comandos de tools en el resumen.
-3. Verifica `cuypilot status --target <destino>`. Abre el cliente y confirma que descubre la pieza.
-  En Genie registra la carpeta adicional y usa un chat nuevo; AGENTS.md solo se hereda en su árbol.
-4. Prueba un caso de uso real con datos sintéticos. Guarda el resultado y versiona archivos y lock.
-5. Actualiza el wheel del entorno y luego `cuypilot update --target <destino>`. Revisa el diff y status.
-  Si es Genie remoto, revisa `deploy --dry-run` y publica después. No cambies el lock manualmente.
-6. Para retirar una pieza, revisa dependencias y usa `remove`. Archivos editados requieren revisar y
-  aceptar explícitamente `--force`; respalda antes tus cambios. Para revertir, instala el wheel anterior,
-  revisa status y actualiza; tools compartidas y publicación remota requieren revisión adicional.
+## Proponer y publicar una pieza
 
-## Proponer y promover una pieza
+Se aceptan piezas nuevas, correcciones de contenido, de la CLI o de los adaptadores, documentación y casos de
+evaluación.
 
-Se aceptan aportes de contenido, correcciones de CLI o adaptadores, documentación, casos de evaluación
-y reportes de errores. No es necesario crear una pieza nueva para contribuir.
+1. Revisa el catálogo y los RFC para no duplicar. Describe el problema, a quién afecta y el resultado esperado.
+2. Si el cambio es una función significativa o de arquitectura, escribe primero un RFC (problema, alcance,
+   alternativas, criterios de aceptación) y acuérdalo. Una corrección pequeña o de documentación solo
+   necesita un PR de alcance claro.
+3. Trabaja en una rama y limita el cambio a su objetivo. [CONTRIBUTING.md](../CONTRIBUTING.md) fija rutas,
+   versiones, licencias, scripts y comprobaciones.
+4. Adjunta evidencia proporcional: una corrección de documentación no requiere ejecutar modelos; una pieza o
+   una adaptación se prueba en cada destino afectado. Lo que no se probó se marca como `no ejecutado`.
+5. Un revisor distinto del autor examina el contenido, la versión, los efectos y la evidencia. El mantenedor
+   incorpora el aporte cuando cumple los criterios y coordina la publicación. Fusionar un PR no actualiza las
+   instalaciones existentes.
 
-1. Revisa el catálogo y los RFC para evitar duplicados. Describe el problema, usuario afectado y
-   resultado esperado en el PR o en un reporte del repositorio.
-2. Para una función significativa o cambio de arquitectura, documenta primero problema, alcance,
-   alternativas y criterios de aceptación en un RFC y acuerda su dirección. Para correcciones pequeñas
-   o documentación, basta con un PR de alcance claro.
-3. Trabaja en una rama y limita el cambio al objetivo. Sigue [CONTRIBUTING.md](../CONTRIBUTING.md)
-   para rutas, versiones, licencias, scripts y comprobaciones.
-4. Adjunta evidencia proporcional al cambio: una corrección de documentación no requiere ejecutar
-   modelos; una pieza o adaptación necesita evaluar los destinos afectados. Marca lo no ejecutado.
-5. Solicita revisión independiente y resuelve observaciones. El mantenedor incorpora el aporte cuando
-   cumpla los criterios aplicables y coordina su publicación; fusionar un PR no actualiza instalaciones.
+Una pieza queda lista para publicarse cuando el CI está verde, tiene responsable, una descripción que indica
+cuándo usarla y cuándo no, casos de evaluación, y evidencia en los destinos que declara.
 
-Para reportar un fallo, incluye versión de cuypilot y de la pieza, destino, entorno relevante,
-pasos mínimos, resultado esperado y observado. Adjunta salida o diff sin secretos. Si se trata de
-una exposición de datos, coordina primero un canal privado con el responsable del repositorio;
-no publiques el contenido sensible en un issue.
+Para cada pieza se documenta qué tarea resuelve y cuándo usar otra, cómo se invoca en cada destino, qué
+dependencias y efectos tiene (scripts, herramientas), su licencia y procedencia, y cómo convive con piezas
+cercanas. El contenido fuente va en el catálogo, la versión y las dependencias en `catalog.toml` y los casos
+en `evals/`.
 
-Autor y responsable de dominio acuerdan una tarea concreta, límites y ejemplos. Mantén el contenido
-fuente en catalog, versión/dependencias en catalog.toml y casos en evals. Para cada pieza documenta:
+### Reportar un fallo
 
-- Qué tarea resuelve, cuándo usarla y cuándo usar otra; un ejemplo completo de entrada y salida.
-- Instalación e invocación por destino; recursos, dependencias y diferencias de comportamiento.
-- Responsable real, licencia/procedencia, datos utilizados y efectos de scripts o tools.
-- Criterios de éxito, restricciones, caso negativo y coexistencia con piezas cercanas.
-
-La guía de usuario ya contiene inventario y combinaciones; amplíala con fichas cuando se modifique una
-pieza. No añadas dependencias ni permisos hipotéticos. Las instrucciones no otorgan permisos.
-
-Ejecuta primero validación automática; después, evals manuales en cada destino declarado. Un revisor
-independiente examina contenido, cambios de versión, efectos y evidencia. La promoción estable necesita
-CI verde, responsable, ficha y evidencia en los destinos publicados; no basta con que el instalador
-copie archivos. Los estados de promoción todavía no son campos implementados ni filtros del wizard.
+Incluye la versión de cuypilot y de la pieza, el destino, el entorno, los pasos mínimos, el resultado esperado
+y el observado, y la salida o el diff sin secretos. Si el problema expone datos, usa un canal privado con el
+responsable del repositorio en lugar de un issue público.
 
 ## Registrar evaluaciones
 
-Adjunta al PR un archivo Markdown sin datos internos ni conversaciones con secretos. Usa esta ficha
-por destino y pieza; `no ejecutado` significa pendiente, no aprobado:
+Cada PR que agrega o cambia una pieza adjunta una ficha Markdown por destino y pieza, sin datos internos ni
+conversaciones con secretos:
 
 ```text
 Pieza y versión:
@@ -115,66 +96,42 @@ Wheel y commit:
 Asistente, versión del cliente y modelo (si está disponible):
 Fecha y evaluador:
 Contexto: proyecto sintético, otras piezas instaladas, permisos relevantes:
-Caso de evals y entrada/fixture:
+Caso de evals y entrada o fixture:
 Invocación: descubrimiento, automática o manual:
 Criterios observables:
 Resultado: pasa / falla / no ejecutado:
 Evidencia: salida, diff o artefacto anonimizado:
-Comparación con versión anterior o sin skill:
-Limitaciones y acciones pendientes:
+Comparación con la versión anterior o sin la skill:
+Limitaciones:
 ```
 
-Las tools necesitan además instalación/desconexión y verificación de efectos en entorno aislado.
-Las instructions deben aparecer en el contexto esperado y no afectar un caso fuera de alcance.
-En Genie valida el notebook real bajo la raíz prevista; una skill registrada desde otra carpeta no
-prueba herencia de instructions. Si el modelo no revela qué skill cargó, registra esa incertidumbre.
+Las herramientas se prueban además instalando y desconectando en un entorno aislado y comprobando sus efectos.
+Las instructions deben aparecer en el contexto esperado y no afectar casos fuera de su alcance. En Genie se
+valida con un notebook real bajo la carpeta prevista: registrar una skill desde otra carpeta no prueba que se
+hereden las instrucciones. Si el modelo no revela qué skill cargó, se registra esa limitación.
 
-## Mantener y distribuir
+## Mantener y publicar versiones
 
-### Rutina de mantenimiento
-
-Como pauta inicial, revisa mensualmente los reportes y piezas en uso, y antes de cada publicación
-revisa todos los cambios incluidos. El equipo puede ajustar esta frecuencia según uso e incidencias.
-
-| Momento | Acción | Registro esperado |
+| Momento | Acción | Registro |
 |---|---|---|
-| Ante un reporte | Reproducir, determinar alcance y priorizar por impacto; indicar mitigación si existe. | Reporte o PR con versión y estado. |
-| Revisión periódica | Revisar fallos recurrentes, duplicados, piezas sin uso y cambios de terceros; comprobar si requieren reevaluación. | Decisión y pendientes en el repositorio. |
-| Antes de publicar | Revisar versiones, licencias, CHANGELOG, documentación y evidencia; ejecutar las comprobaciones de CI. | PR revisado con resultados y limitaciones. |
-| Al publicar | Comprobar tag y versión, construir el wheel, calcular checksum y conservar la versión anterior. | Versión y artefactos identificables en el canal acordado. |
-| En cada proyecto consumidor | Revisar notas de versión, actualizar en una rama, comprobar estado, diff y tareas habituales antes de integrar. | PR de actualización con archivos y locks afectados. |
+| Ante un reporte | Reproducir, determinar el alcance, priorizar por impacto e indicar una mitigación. | Reporte o PR con versión y estado |
+| Cada mes | Revisar fallos recurrentes, duplicados, piezas sin uso y cambios de terceros; reevaluar lo que cambió. | Decisión en el repositorio |
+| Antes de publicar | Revisar versiones, licencias, CHANGELOG, documentación y evidencia; CI en verde. | PR revisado |
+| Al publicar | Subir la versión en `pyproject.toml`, actualizar el CHANGELOG, crear el tag `vX.Y.Z`; el CI construye el wheel. Guardar el wheel y su checksum en el canal del equipo y conservar el anterior. | Tag y artifact identificables |
+| En cada proyecto consumidor | Leer las notas de versión, actualizar en una rama, revisar `status` y el diff, probar y abrir un PR. | PR de actualización con archivos y lockfile |
 
-Las comprobaciones actuales de CI son `ruff check .`, `ruff format --check .` y `pytest -q`.
-La construcción por tag se describe en [CONTRIBUTING.md](../CONTRIBUTING.md#versionado).
-Además de las pruebas automáticas, verifica instalación y actualización desde el wheel en un proyecto
-aislado cuando cambien el empaquetado, la CLI, las herramientas o las adaptaciones.
+El CI ejecuta `ruff check .`, `ruff format --check .` y `pytest -q` con Python 3.11, 3.12 y 3.13. Cuando
+cambian el empaquetado, la CLI, las herramientas o las adaptaciones, además se instala y actualiza desde el
+wheel en un proyecto aislado.
 
-### Publicación, incidentes y retirada
+Se publica un wheel inmutable por versión. Lo experimental no se publica como aprobado. Un incidente identifica
+wheel, pieza, destino, síntoma, mitigación y corrección o retirada. Se reevalúa cuando cambian la fuente, el
+adaptador, el cliente, los permisos o el modelo.
 
-El mantenedor publica un wheel inmutable por versión con CHANGELOG y checksum en el canal acordado.
-Hoy CI deja un artifact en tags; todavía falta definir retención y acceso del equipo. Conserva la
-versión anterior para reversión y separa piloto de adopción general. No publiques experimental como
-aprobado. Un incidente debe identificar wheel, pieza, destino, síntoma, mitigación y fix o retirada.
-Reevalúa cuando cambien fuente, adaptador, cliente, permisos o modelo relevante.
+Para Genie compartido, la ubicación y los permisos de la carpeta del workspace se acuerdan con su administrador:
+un `deploy` de proyecto no es una forma de gobernar todo el workspace.
 
-Configura responsables reales en CODEOWNERS y protección de rama con CI y revisión obligatorios.
-La plantilla de PR documenta el acuerdo, pero no activa estos controles. Para Genie compartido,
-coordina ubicación y ACL con el administrador; no uses un deploy de proyecto a /Workspace como
-atajo para gobernar todo el workspace.
-
-Si una pieza falla, registra el alcance conocido y recomienda una versión anterior o su retirada
-según el impacto. Corrige y reevalúa el caso antes de recomendar su adopción nuevamente. Si deja
-de mantenerse, documenta el motivo, la alternativa y el efecto sobre dependencias; aplica las reglas
-de versionado para quitarla del catálogo. La retirada del catálogo no borra copias ya instaladas:
-cada consumidor debe revisar y ejecutar la actualización o eliminación correspondiente.
-
-## Acuerdos pendientes del equipo
-
-Antes de anunciar adopción general, deja registrados aquí o mediante enlaces a documentos del
-repositorio los siguientes acuerdos. Hasta entonces no se consideran configurados:
-
-- Mantenedores y revisores de dominio reales, con asignaciones en CODEOWNERS.
-- Canal de distribución de wheels y checksums, acceso, retención y ubicación de versiones anteriores.
-- Versiones de clientes y destinos evaluados, tareas del piloto y evidencia resultante.
-- Canal de soporte y contacto privado para incidentes con datos sensibles.
-- Responsables de actualización por proyecto y, si aplica, ubicación y permisos del workspace Genie.
+Si una pieza falla, se registra el alcance conocido y se recomienda la versión anterior o su retirada. Se
+corrige y se reevalúa antes de volver a recomendarla. Si deja de mantenerse, se documenta el motivo, la
+alternativa y el efecto sobre sus dependencias, y se quita siguiendo las reglas de versionado. Retirar una
+pieza del catálogo no borra las copias ya instaladas: cada proyecto ejecuta `update` o `remove`.
