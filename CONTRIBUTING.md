@@ -88,4 +88,4 @@ por un LLM. Consulta `docs/multiples-asistentes.md`.
   - MAJOR: se quita o renombra una pieza, o hay un cambio incompatible en la CLI o el lockfile.
   - MINOR: piezas o comandos nuevos.
   - PATCH: correcciones.
-- **Release:** sube `version` en `pyproject.toml`, actualiza `CHANGELOG.md`, crea el tag `vX.Y.Z` y haz push del tag. El CI construye el wheel y lo deja como artifact (localmente: `python -m build`).
+- **Release:** sube `version` en `pyproject.toml` y actualiza `CHANGELOG.md` en `main`; después crea el tag `vX.Y.Z` y haz push del tag. El CI corre las pruebas, construye el wheel (localmente: `python -m build`), lo deja como artifact y lo guarda en `whl/` con `SHA256SUMS`, mediante un commit del bot a `main`. Si `main` tiene protección de rama, el bot necesita permiso para empujar a ella. Las versiones anteriores se conservan en `whl/`.

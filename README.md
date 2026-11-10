@@ -21,8 +21,9 @@ que necesita; los archivos quedan en su propio repositorio, versionados con Git.
 Requisitos: Python 3.11 o superior y pip. No necesita uv ni pipx.
 
 cuypilot es una **dependencia de desarrollo**: se instala en el entorno virtual del proyecto donde lo vas a usar.
-`<ruta-del-wheel>` es el lugar donde tu equipo publica los wheels (una carpeta compartida, un índice interno
-de paquetes o el artifact que el CI genera en cada tag de este repositorio).
+Cada versión publicada deja su wheel en la carpeta [`whl/`](whl/) de este repositorio, junto con un archivo
+`SHA256SUMS`. `<ruta-del-wheel>` es esa carpeta, ya sea en un clon del repositorio o en el lugar donde tu equipo
+la copie.
 
 ```bash
 python -m venv .venv                 # si el proyecto aún no tiene uno
@@ -30,6 +31,9 @@ source .venv/bin/activate            # Windows: .venv\Scripts\activate
 pip install <ruta-del-wheel>/cuypilot-0.5.1-py3-none-any.whl
 cuypilot --version
 ```
+
+Para comprobar la integridad antes de instalar: `cd <ruta-del-wheel> && shasum -a 256 -c SHA256SUMS`
+(en Linux, `sha256sum -c SHA256SUMS`).
 
 Agrega esa misma línea a `requirements-dev.txt` para que el resto del equipo instale la misma versión.
 No lo pongas en el `requirements.txt` que se instala en el cluster de Databricks.
@@ -105,4 +109,5 @@ ruff check . && ruff format --check .
 python -m build                # genera dist/cuypilot-X.Y.Z-py3-none-any.whl
 ```
 
-El CI ejecuta lo mismo con Python 3.11, 3.12 y 3.13, y construye el wheel cuando se publica un tag `vX.Y.Z`.
+El CI ejecuta lo mismo con Python 3.11, 3.12 y 3.13. Al publicar un tag `vX.Y.Z` además construye el wheel y lo
+guarda en `whl/` (ver [CONTRIBUTING](CONTRIBUTING.md#versionado)). Las versiones anteriores permanecen ahí.

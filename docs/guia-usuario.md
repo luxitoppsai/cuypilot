@@ -39,8 +39,9 @@ Las skills de PySpark asumen **Databricks Runtime 15.4 LTS o superior** (Spark �
 ## 2. Instalación
 
 cuypilot se instala como **dependencia de desarrollo**, en el **entorno virtual del proyecto** donde lo
-vas a usar. `<ruta-del-wheel>` es el lugar donde tu equipo publica los wheels (una carpeta compartida, un
-índice interno de paquetes o el artifact que el CI genera en cada tag del repositorio de cuypilot).
+vas a usar. `<ruta-del-wheel>` es la carpeta `whl/` del repositorio de cuypilot (en un clon, o donde tu equipo la copie):
+cada versión publicada deja ahí su wheel, junto con `SHA256SUMS` para comprobar su integridad
+(`shasum -a 256 -c SHA256SUMS`; en Linux, `sha256sum -c SHA256SUMS`). Las versiones anteriores se conservan.
 
 ```bash
 python -m venv .venv                     # si el proyecto aún no tiene entorno virtual
