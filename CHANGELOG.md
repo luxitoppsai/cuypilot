@@ -13,7 +13,6 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado
 
 ### Eliminado
 - `uv.lock`: el proyecto se construye e instala solo con pip.
-- `docs/research/`: la investigación es material interno del equipo y no forma parte del repositorio.
 
 ## [0.5.1] - 2026-10-08
 
