@@ -1,6 +1,6 @@
 ---
 rfc: RFC-008
-estado: borrador   # borrador | en-revision | aceptado | rechazado | superado
+estado: en-revision   # borrador | en-revision | aceptado | rechazado | superado
 fecha: 2026-11-10
 ---
 
@@ -28,7 +28,7 @@ según su documentación oficial al 2026-11-10 (el contrato de su manifiesto fig
 | `apm install <pkg>` agrega la entrada al manifiesto y revierte si falla | `add` instala y revierte archivos, sin manifiesto | Sí: `add` y `remove` editan el manifiesto |
 | `apm audit --ci`: comprobaciones de consistencia sin configuración | — | Sí: `audit --ci` (ver RFC-007) |
 | Escaneo de Unicode oculto en cada instalación | — | Sí, informativo (RFC-007) |
-| `apm-policy.yml`: permitir o denegar fuentes, exigir piezas, heredado por organización | — | Opcional (pregunta 2) |
+| `apm-policy.yml`: permitir o denegar fuentes, exigir piezas, heredado por organización | — | No entra (decisión 2) |
 | Fuentes git arbitrarias, registros y marketplaces | El catálogo viaja en el wheel | No entra |
 
 ## Decisión propuesta
@@ -107,10 +107,13 @@ piezas de cuypilot, `.opencode/`, `.assistant/`). `init` sigue preguntando.
 6. Los proyectos sin manifiesto siguen funcionando con los comandos existentes.
 7. `pytest`, `ruff check` y `ruff format --check` pasan; las guías documentan el manifiesto y el fragmento de CI.
 
-## Preguntas abiertas
+## Decisiones tomadas
 
-1. **Nombre del archivo:** ¿`cuypilot.toml` en la raíz del proyecto?
-2. **Política:** APM permite además un archivo de política (qué piezas se permiten o se exigen, heredado por
-   organización). ¿La incluimos en una RFC posterior o prefieres que quede fuera?
-3. **Lockfiles:** hoy hay uno por destino (`.github/`, `.opencode/`, `.assistant/`). ¿Los mantenemos así con un
-   solo manifiesto, o prefieres un lockfile único en la raíz? Mantenerlos evita romper instalaciones existentes.
+1. **Nombre y lugar:** `cuypilot.toml` en la raíz del proyecto. Es el mismo formato que `catalog.toml`, se lee
+   con la librería estándar y su nombre dice quién lo usa.
+2. **Política:** queda fuera de esta RFC. Con el catálogo dentro del wheel, "qué piezas se permiten" ya lo decide
+   qué wheel se instala y qué pide el manifiesto de cada proyecto; una política heredada por organización aporta
+   cuando hay varias fuentes. Se retoma si aparecen fuentes adicionales.
+3. **Lockfiles:** se mantiene uno por destino (`.github/`, `.opencode/`, `.assistant/`) con un solo manifiesto.
+   No rompe instalaciones existentes, cada destino sigue siendo independiente y `install --frozen` los revisa
+   todos.
