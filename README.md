@@ -21,9 +21,12 @@ que necesita; los archivos quedan en su propio repositorio, versionados con Git.
 Requisitos: Python 3.11 o superior y pip. No necesita uv ni pipx.
 
 cuypilot es una **dependencia de desarrollo**: se instala en el entorno virtual del proyecto donde lo vas a usar.
-Cada versión publicada deja su wheel en la carpeta [`whl/`](whl/) de este repositorio, junto con un archivo
-`SHA256SUMS`. `<ruta-del-wheel>` es esa carpeta, ya sea en un clon del repositorio o en el lugar donde tu equipo
-la copie.
+Cada versión publicada deja su wheel y un archivo `SHA256SUMS` como archivos de su **Release** en GitHub
+(pestaña *Releases* de este repositorio). Descárgalos a una carpeta; esa carpeta es `<ruta-del-wheel>`:
+
+```bash
+gh release download v0.5.1 --pattern '*' --dir <ruta-del-wheel>    # o desde la página de la Release
+```
 
 ```bash
 python -m venv .venv                 # si el proyecto aún no tiene uno
@@ -109,5 +112,6 @@ ruff check . && ruff format --check .
 python -m build                # genera dist/cuypilot-X.Y.Z-py3-none-any.whl
 ```
 
-El CI ejecuta lo mismo con Python 3.11, 3.12 y 3.13. Al publicar un tag `vX.Y.Z` además construye el wheel y lo
-guarda en `whl/` (ver [CONTRIBUTING](CONTRIBUTING.md#versionado)). Las versiones anteriores permanecen ahí.
+El CI ejecuta lo mismo con Python 3.11, 3.12 y 3.13. Al publicar un tag `vX.Y.Z` además construye el wheel y crea la
+Release con el wheel y su `SHA256SUMS` (ver [CONTRIBUTING](CONTRIBUTING.md#versionado)). Las versiones anteriores
+permanecen en sus Releases.

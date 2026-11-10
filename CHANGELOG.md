@@ -5,7 +5,7 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado
 ## [Unreleased]
 
 ### Añadido
-- El CI guarda el wheel de cada release en `whl/`, con `SHA256SUMS`, para instalarlo sin un índice de paquetes. Incluye la 0.5.1.
+- El CI crea una Release por cada tag `v*` con el wheel y su `SHA256SUMS`, para instalarlo sin un índice de paquetes y sin escribir en ramas protegidas. El CI también escucha `master` y `develop`.
 
 ### Documentación
 - README, guía de usuario, guía de varios asistentes, CONTRIBUTING y PROJECT reescritos para reflejar lo que
