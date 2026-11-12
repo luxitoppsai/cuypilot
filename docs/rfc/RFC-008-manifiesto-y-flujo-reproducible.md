@@ -118,3 +118,12 @@ piezas de cuypilot, `.opencode/`, `.assistant/`). `init` sigue preguntando.
 3. **Lockfiles:** se mantiene uno por destino (`.github/`, `.opencode/`, `.assistant/`) con un solo manifiesto.
    No rompe instalaciones existentes, cada destino sigue siendo independiente y `install --frozen` los revisa
    todos.
+
+## Implementación 0.6.0
+
+Entregada localmente el 2026-11-12; publicación y matriz remota pendientes. Los detalles de selección
+común, migración sin adivinar intención, comparadores admitidos y límites de rollback se concretan en
+[RFC-009](RFC-009-estabilizacion.md). Sin manifiesto, `add/remove` conservan el modo histórico;
+`init` lo genera e `install` migra los locks. Con manifiesto, `add/remove` lo editan y reconcilian todos
+sus destinos en una transacción local. `audit --ci` entrega integridad; el escaneo de contenido de
+RFC-007 permanece fuera de esta implementación. Guía: [flujo reproducible](../flujo-reproducible.md).

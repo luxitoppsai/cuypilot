@@ -4,6 +4,9 @@ Catálogo versionado y revisado de **skills, agents, instructions y herramientas
 programación con IA: **GitHub Copilot en VS Code**, **OpenCode** y **Genie Code de Databricks**. Está
 pensado para desarrolladores, data scientists y ML engineers que trabajan con Python y PySpark en Databricks.
 
+Versión preparada: **0.6.0**, pendiente de publicación. El flujo con manifiesto se describe en
+[instalación reproducible y CI](docs/flujo-reproducible.md).
+
 Se distribuye como un **wheel de Python** con una CLI (`cuypilot`). Cada proyecto instala solo las piezas
 que necesita; los archivos quedan en su propio repositorio, versionados con Git.
 
@@ -15,6 +18,7 @@ que necesita; los archivos quedan en su propio repositorio, versionados con Git.
    y registra en un lockfile qué instaló, en qué versión y con qué hash.
 4. Haces commit de lo instalado: queda constancia de qué piezas usa el proyecto y todo el equipo las recibe.
 5. Para actualizar, instalas un wheel nuevo y ejecutas `cuypilot update`. Las piezas que editaste a mano no se pisan.
+6. `init` declara la selección en `cuypilot.toml`; `install` la reproduce y `install --frozen` verifica deriva en CI.
 
 ## Instalación
 
@@ -57,11 +61,12 @@ O pieza por pieza:
 cuypilot list                                        # catálogo; * marca lo instalado
 cuypilot add python-standards python-design design-review
 cuypilot status                                      # ok | desactualizada | modificada | retirada
-git add .github .gitignore && git commit -m "chore: piezas de cuypilot"
+git add .github cuypilot.toml && git commit -m "chore: piezas de cuypilot"
 ```
 
-Sin `--target`, los comandos usan Copilot. `--target opencode` o `--target genie` instalan en otro asistente,
-y `--path` elige el proyecto. Cada destino tiene su propio lockfile y los tres pueden convivir.
+Sin `--target`, se usan los destinos del manifiesto o se detectan los existentes; sin señales, Copilot.
+`--path` elige el proyecto. Cada destino tiene su propio lockfile y los tres pueden convivir.
+Con manifiesto, `add/remove` cambian la selección común de todos sus destinos.
 
 | Comando | Qué hace |
 |---|---|
@@ -69,8 +74,11 @@ y `--path` elige el proyecto. Cada destino tiene su propio lockfile y los tres p
 | `cuypilot list [--type skill\|agent\|instruction\|tool]` | Muestra el catálogo |
 | `cuypilot add <nombre>... [--dry-run]` | Instala piezas y sus dependencias |
 | `cuypilot status` | Estado de lo instalado |
-| `cuypilot update [<nombre>...]` | Actualiza a la versión del wheel instalado |
+| `cuypilot update [<nombre>...] [--dry-run]` | Actualiza o muestra el plan |
 | `cuypilot remove <nombre>...` | Quita piezas |
+| `cuypilot install [--frozen]` | Reproduce el manifiesto o verifica sin escribir |
+| `cuypilot audit --ci` | Verifica integridad de archivos, locks y bloques |
+| `cuypilot outdated` / `cuypilot why <nombre>` | Consulta actualizaciones y dependencias |
 | `cuypilot deploy --workspace-path <carpeta>` | Publica la instalación de Genie en un workspace de Databricks |
 
 En Copilot invoca las skills con `/nombre`; en OpenCode pídelas por nombre; en Genie usa `@nombre`.
@@ -98,6 +106,7 @@ combinaciones por rol: [guía de usuario](docs/guia-usuario.md#4-qué-hay-en-el-
 
 - [Guía de usuario](docs/guia-usuario.md): instalación, uso, catálogo, herramientas, scripts y solución de problemas.
 - [Varios asistentes](docs/multiples-asistentes.md): qué instala cada destino, versiones, y publicación en Genie Code.
+- [Flujo reproducible](docs/flujo-reproducible.md): manifiesto, migración, frozen y workflow para consumidores.
 - [Cómo trabajamos](docs/gobernanza.md): roles, uso diario, revisión de aportes, publicación y mantenimiento.
 - [Contribuir](CONTRIBUTING.md): cómo agregar o modificar piezas, scripts, terceros y herramientas.
 - [Cambios por versión](CHANGELOG.md).
@@ -112,6 +121,7 @@ ruff check . && ruff format --check .
 python -m build                # genera dist/cuypilot-X.Y.Z-py3-none-any.whl
 ```
 
-El CI ejecuta lo mismo con Python 3.11, 3.12 y 3.13. Al publicar un tag `vX.Y.Z` además construye el wheel y crea la
-Release con el wheel y su `SHA256SUMS` (ver [CONTRIBUTING](CONTRIBUTING.md#versionado)). Las versiones anteriores
-permanecen en sus Releases.
+El CI configura pruebas con Python 3.11–3.14 en Ubuntu y construye sdist/wheel también en PR.
+Comprueba el wheel en venv limpio con Ubuntu 3.11–3.14 y Windows 3.11/3.14 para los tres destinos.
+Al publicar un tag `vX.Y.Z`, crea la Release con el wheel y su `SHA256SUMS` después de esas comprobaciones
+(ver [CONTRIBUTING](CONTRIBUTING.md#versionado)). Las versiones anteriores permanecen en sus Releases.

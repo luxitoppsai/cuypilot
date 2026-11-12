@@ -120,11 +120,14 @@ hereden las instrucciones. Si el modelo no revela qué skill cargó, se registra
 | Al publicar | Subir la versión en `pyproject.toml`, actualizar el CHANGELOG y crear el tag `vX.Y.Z`. El CI construye el wheel y crea la Release `vX.Y.Z` con el wheel y su `SHA256SUMS`; las Releases anteriores se conservan. | Tag y Release |
 | En cada proyecto consumidor | Leer las notas de versión, actualizar en una rama, revisar `status` y el diff, probar y abrir un PR. | PR de actualización con archivos y lockfile |
 
-El CI ejecuta `ruff check .`, `ruff format --check .` y `pytest -q` con Python 3.11, 3.12 y 3.13. Cuando
-cambian el empaquetado, la CLI, las herramientas o las adaptaciones, quien revisa además instala y actualiza
-desde el wheel en un proyecto aislado: el CI no lo hace.
+El CI configura `ruff check .`, `ruff format --check .` y `pytest -q` con Python 3.11–3.14 en Ubuntu.
+Construye sdist/wheel en PR y verifica el wheel en venv limpio: Ubuntu 3.11–3.14 y Windows 3.11/3.14.
+La prueba del wheel cubre los tres destinos y sus recursos; no demuestra comportamiento con un LLM.
+`scripts/smoke_wheel.py --previous-wheel <wheel-anterior> <wheel-nuevo>` permite comprobar además
+una actualización desde un paquete anterior, con migración de locks y conservación de reglas propias.
 
-Se publica un wheel inmutable por versión, como archivo de su Release. Si la Release ya existe, el CI no la modifica.
+Se publica un wheel inmutable por versión. Si la Release ya existe, el CI conserva sus assets y puede
+completar los que faltan tras verificar sus bytes; un checksum incompatible aborta sin sobrescribirlos.
 La creación de tags `v*` conviene limitarla a los mantenedores con una regla de tags del proveedor: de ellos depende qué código se publica. Lo experimental no se publica como aprobado. Un incidente identifica
 wheel, pieza, destino, síntoma, mitigación y corrección o retirada. Se reevalúa cuando cambian la fuente, el
 adaptador, el cliente, los permisos o el modelo.

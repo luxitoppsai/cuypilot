@@ -213,15 +213,28 @@ Herramientas opcionales para cualquier rol: `graphify` (repos grandes o desconoc
 | `cuypilot remove <nombre>... [--yes] [--force]` | Quita piezas; protege archivos editados |
 | `cuypilot deploy --workspace-path <carpeta> [--profile <perfil>] [--dry-run]` | Publica la instalación de Genie en un workspace de Databricks (ver [varios asistentes](multiples-asistentes.md)) |
 | `cuypilot --version` | Versión de cuypilot |
+| `cuypilot install [--frozen]` | Reproduce la selección declarada o comprueba deriva sin escribir |
+| `cuypilot audit [--ci]` | Comprueba integridad; `--ci` falla por inconsistencias |
+| `cuypilot outdated` / `cuypilot why <nombre>` | Consulta diferencias y dependencias |
+
+Desde 0.6.0, `init` escribe `cuypilot.toml`. Con manifiesto, `add/remove` cambian la selección común
+y todos sus destinos. Sin manifiesto conservan el modo histórico. Consulta
+[flujo reproducible](flujo-reproducible.md) para migración, rangos, limitaciones y un workflow de CI.
 
 Opciones:
 
-- `--target copilot\|opencode\|genie`: asistente destino (Copilot por defecto). `--path <carpeta>`: proyecto sobre el que se opera (por defecto, el directorio actual).
-- `--dry-run` (solo en `add`): muestra qué se instalaría y qué comandos se ejecutarían, **sin cambiar nada**.
+- `--target copilot\|opencode\|genie`: asistente destino; sin él se usa el manifiesto o la detección, con Copilot como último valor. `--path <carpeta>` elige el proyecto.
+- `--dry-run` (en `add`, `update` y `deploy`): muestra el plan sin escribir ni ejecutar instaladores/configuradores.
 - `--yes`: no pide confirmación antes de ejecutar los comandos de una herramienta.
 - `--force`: en `add`, sobrescribe archivos que existían y no eran de cuypilot; en `update`, pisa piezas editadas y conflictos con recursos nuevos; en `remove`, elimina archivos editados. Revisa y respalda tus cambios antes.
 
 Estados que muestra `status`:
+
+La CLI agrupa el catálogo por tipo y ajusta las descripciones al ancho de la terminal. En `status`, los
+estados que necesitan atención aparecen primero. `[PLAN]` identifica vistas previas, `[OK]` resultados
+correctos y `[!]` situaciones que requieren revisión; los mensajes no dependen solo del color. Define
+`NO_COLOR=1` para desactivarlo; al redirigir la salida se desactiva automáticamente.
+Ejemplos y criterios: [diseño de la CLI](diseno-cli.md).
 
 | Estado | Significa | Qué hacer |
 |---|---|---|

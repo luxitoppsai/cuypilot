@@ -69,11 +69,12 @@ class GenieDeployment:
         self._call("export", remote, "--format", "RAW", "--file", str(local))
         return local.read_bytes()
 
-    def deploy(self, dry_run: bool = False, force: bool = False) -> list[str]:
+    def deploy(self, dry_run: bool = False, force: bool = False, resume: bool = False) -> list[str]:
         """Valida cambios locales y remotos, muestra el plan y despliega tras confirmación.
 
         :param dry_run: Consulta y muestra cambios sin escribir en Databricks.
         :param force: Permite sobrescribir conflictos o ediciones remotas de archivos gestionados.
+        :param resume: Adopta únicamente contenido que ya coincide con el despliegue deseado.
         :returns: Rutas remotas modificadas.
         :raises CuypilotError: Si hay conflictos, falta autenticación o falla un comando.
         """
@@ -117,18 +118,24 @@ class GenieDeployment:
                 raise CuypilotError("Bloque remoto de instrucciones mal formado.")
             old_block = ws.block_pattern.search(text)
             old_digest = _sha(old_block[0].encode("utf-8")) if old_block else None
-            if remote_ws.managed_hash is not None and remote_ws.managed_hash != old_digest and not force:
+            replacement = local_block[0] if local_block else ""
+            resumed_block = resume and (old_block[0] if old_block else "") == replacement
+            if (
+                remote_ws.managed_hash is not None
+                and remote_ws.managed_hash != old_digest
+                and not (force or resumed_block)
+            ):
                 raise CuypilotError("Bloque remoto modificado; usa --force para sobrescribirlo.")
-            if old_block and remote_lock is None and not force:
+            if old_block and remote_lock is None and not (force or resumed_block):
                 raise CuypilotError("Bloque remoto ajeno sin lockfile; usa --force para adoptarlo.")
             for relative, data in current.items():
                 if relative in old_files:
                     conflict = data is None or _sha(data) != old_files[relative]
                 else:
                     conflict = data is not None
-                if conflict and not force:
+                resumed_file = resume and data == desired.get(relative)
+                if conflict and not (force or resumed_file):
                     raise CuypilotError(f"Archivo remoto ajeno o modificado: {relative}; usa --force.")
-            replacement = local_block[0] if local_block else ""
             if old_block:
                 text = ws.block_pattern.sub(lambda _: replacement, text)
             elif replacement:
@@ -181,7 +188,8 @@ class GenieDeployment:
                 if code:
                     raise CuypilotError(
                         f"Despliegue parcial: falló {command[2]}. "
-                        f"Revisa y vuelve a desplegar: {output[-1000:]}"
+                        "Revisa y reintenta con deploy --resume; solo adopta contenido idéntico: "
+                        f"{output[-1000:]}"
                     )
             print(f"  Registra {self.destination}/.assistant/skills en Settings de Genie Code una vez.")
             return changed

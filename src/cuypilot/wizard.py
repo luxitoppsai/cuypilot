@@ -2,15 +2,15 @@
 
 from __future__ import annotations
 
-import os
 import shutil
 import sys
 from collections.abc import Callable
 from textwrap import fill
 
 from cuypilot.catalog import Tool
+from cuypilot.console import paint, paragraph
 from cuypilot.targets import TARGETS
-from cuypilot.workspace import Workspace
+from cuypilot.workspace import Report, Workspace
 
 ART = r"""
                           _ __      __
@@ -21,21 +21,16 @@ ART = r"""
           /____/_/"""
 
 
-def paint(text: str, code: str) -> str:
-    """Colorea ``text`` con un código ANSI solo si la salida es una terminal y no existe ``NO_COLOR``."""
-    if "NO_COLOR" in os.environ or not sys.stdout.isatty():
-        return text
-    return f"\033[{code}m{text}\033[0m"
-
-
 def banner(version: str) -> str:
     """Banner de cuypilot con la versión.
 
     :param version: Versión instalada de cuypilot.
     :returns: Texto listo para imprimir.
     """
-    tagline = f"v{version} · catálogo para Copilot, OpenCode y Genie Code"
-    return paint(ART, "1;36") + "  " + paint(tagline, "2") + "\n"
+    title = paint(f"cuypilot {version}", "1;36")
+    tagline = paragraph("Catálogo para Copilot, OpenCode y Genie Code")
+    logo = paint(ART, "1;36") + "\n\n" if shutil.get_terminal_size((80, 24)).columns >= 60 else ""
+    return f"{logo}  {title}\n{tagline}\n"
 
 
 def _choose(ask: Callable[[str], str], prompt: str, options: list[str]) -> int:
@@ -89,6 +84,7 @@ def run_wizard(
     role: str | None = None,
     assume_yes: bool = False,
     ask: Callable[[str], str] | None = None,
+    install: Callable[[list[str]], Report] | None = None,
 ) -> int:
     """Guía la primera instalación: rol → piezas sugeridas → herramientas opcionales → instalación.
 
@@ -98,6 +94,7 @@ def run_wizard(
     :param role: Rol elegido de antemano (modo no interactivo con ``assume_yes``).
     :param assume_yes: No preguntar: instala las piezas del rol, sin herramientas opcionales.
     :param ask: Función que lee la respuesta del usuario (por defecto, :func:`input`).
+    :param install: Instalador declarativo opcional de la CLI.
     :returns: Código de salida.
     """
     ask = ask or input
@@ -124,6 +121,7 @@ def run_wizard(
     chosen = list(roles[role]["items"]) if role else []
     print(paint("\n  2/4 · Selección", "1;36"))
     if not assume_yes:
+        print(paragraph(f"{len(chosen)} sugeridas para tu rol · {len(pieces)} disponibles"))
         print("  [✓] sugerida · instalada = ya está en el proyecto")
         for i, name in enumerate(pieces, start=1):
             item = ws.catalog[name]
@@ -159,8 +157,9 @@ def run_wizard(
         print("  No elegiste ninguna pieza; no se instaló nada.")
         return 0
     print(paint("\n  3/4 · Resumen", "1;36"))
-    print(f"\n  Se instalará: {', '.join(paint(n, '1') for n in chosen)}")
     items, commands = ws.plan_add(chosen)
+    print(paragraph(f"{len(items)} nuevas · {len(chosen)} elegidas · {len(commands)} comandos externos"))
+    print(paragraph("Se instalará: " + ", ".join(chosen)))
     for item in items:
         dependency = " · dependencia" if item.name not in chosen else ""
         print(f"    + {item.name} ({item.type} {item.version}){dependency}")
@@ -179,7 +178,7 @@ def run_wizard(
     print(paint("\n  4/4 · Instalación", "1;36"), flush=True)
     print("  Aplicando selección…", flush=True)
     try:
-        report = ws.add(chosen)
+        report = install(chosen) if install else ws.add(chosen)
     finally:
         ws.confirm = previous_confirm
     for index, name in enumerate(report.done, start=1):
@@ -188,6 +187,7 @@ def run_wizard(
         print(f"  - {name}: {reason}")
     for note in report.notes:
         print(f"  nota: {note}")
+    print(paint(paragraph(f"Listo: {len(report.done)} aplicadas · {len(report.skipped)} sin cambios."), "32"))
     if ws.target.name != "copilot":
         _target_next_steps(ws)
         return 0
@@ -197,7 +197,8 @@ def run_wizard(
         "    - skill: escribe / y su nombre (ej. /design-review), o Copilot la elige según tu pedido.\n"
         "    - agent: elígelo en el selector de agentes del chat.\n"
         "\n  Siguientes pasos:\n"
-        '    1. git add .github .gitignore && git commit -m "chore: copilot customizations via cuypilot"\n'
+        '    1. git add .github cuypilot.toml && git commit -m "chore: copilot customizations via cuypilot"\n'
+        "       Incluye .gitignore si agregaste herramientas.\n"
         "    2. En VS Code: Developer: Reload Window y abre Copilot Chat.\n"
         "    3. Guía completa: docs/guia-usuario.md del repo de cuypilot.\n"
     )
@@ -217,5 +218,6 @@ def _target_next_steps(ws: Workspace) -> None:
         )
     print("  Las instrucciones se incluyen en AGENTS.md, conservando el contenido del proyecto.")
     print(
-        f"  Versiona {ws.target.directory} y AGENTS.md; revisa `cuypilot status --target {ws.target.name}`."
+        f"  Versiona {ws.target.directory}, AGENTS.md y cuypilot.toml; "
+        f"revisa `cuypilot status --target {ws.target.name}`."
     )

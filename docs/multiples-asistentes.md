@@ -21,7 +21,10 @@ cuypilot init --target opencode --role mle --yes
 cuypilot init --target genie --role docs --yes
 ```
 
-Los tres pueden convivir en un proyecto. Los comandos existentes sin `--target` siguen usando Copilot.
+Los tres pueden convivir en un proyecto. Desde 0.6.0, los comandos sin `--target` usan el manifiesto o
+detectan destinos existentes; sin señales se usa Copilot. `init` escribe un manifiesto con selección común:
+para instalarlo en otros destinos, edita `targets` y ejecuta `install`, en lugar de repetir el wizard.
+Consulta [flujo reproducible](flujo-reproducible.md). Con manifiesto, `add/remove` reconcilian todos sus destinos.
 Para operar desde otra carpeta:
 
 ```bash
@@ -77,7 +80,8 @@ Hay tres niveles diferentes:
 
 `status` muestra instalada y catálogo, destino y estado. Compara versión **y** contenido, además de
 las dependencias registradas. Por eso un cambio de versión con contenido idéntico se actualiza.
-`update` actúa sobre un solo destino y mantiene las ediciones locales salvo `--force`. No descarga
+`update --target <destino>` actúa sobre ese destino; sin destino recorre los declarados o detectados.
+Mantiene las ediciones locales salvo `--force`. No descarga
 versiones arbitrarias de piezas: para otro conjunto instala el wheel correspondiente y luego actualiza.
 También puede restaurar el conjunto de un wheel anterior; revisa `status` antes de aplicar el cambio.
 

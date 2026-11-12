@@ -88,4 +88,23 @@ por un LLM. Consulta `docs/multiples-asistentes.md`.
   - MAJOR: se quita o renombra una pieza, o hay un cambio incompatible en la CLI o el lockfile.
   - MINOR: piezas o comandos nuevos.
   - PATCH: correcciones.
-- **Release:** sube `version` en `pyproject.toml` y actualiza `CHANGELOG.md` en la rama principal (por PR aprobado, si está protegida); después crea el tag `vX.Y.Z` sobre ese commit y haz push del tag. El CI corre las pruebas, construye el wheel (localmente: `python -m build`), lo deja como artifact y crea la Release `vX.Y.Z` con el wheel y su `SHA256SUMS`. No escribe en ninguna rama, así que no choca con la protección de ramas. Si la Release ya existe, no la modifica.
+- **Release:** sube `version` en `pyproject.toml` y actualiza `CHANGELOG.md` en la rama principal (por PR aprobado, si está protegida); después crea el tag `vX.Y.Z` sobre ese commit y haz push del tag. El CI corre las pruebas, construye el wheel (localmente: `python -m build`), lo deja como artifact y crea la Release `vX.Y.Z` con el wheel y su `SHA256SUMS`. No escribe en ninguna rama. Si la Release ya existe, verifica los assets publicados y completa los que falten sin sobrescribirlos; un checksum incompatible aborta.
+
+El build y los smoke tests del wheel también se ejecutan en PR. Las versiones directas de herramientas
+de desarrollo y del backend están fijadas en `pyproject.toml`; sus dependencias transitivas no constituyen
+un lock completo. Para verificar localmente sin red después de preparar el entorno:
+
+```bash
+python -m build --no-isolation
+python scripts/smoke_wheel.py dist/cuypilot-0.6.0-py3-none-any.whl
+# Opcional: comprobar actualización real desde un wheel anterior
+python scripts/smoke_wheel.py dist/cuypilot-0.6.0-py3-none-any.whl --previous-wheel <wheel-anterior>
+```
+
+El smoke crea su propio venv, instala con `--no-index --no-deps` y trabaja fuera del checkout.
+Los scripts de publicación se prueban con un ejecutor simulado; no requieren tokens para ejecutar pytest.
+
+Un tag `vX.Y.Z` subido al remoto genera el artefacto **cuypilot-dist** y, tras pasar los smoke tests,
+una Release con el wheel y su checksum. Si el tag se crea desde otro workflow usando `GITHUB_TOKEN`,
+ese push no dispara otro CI: el generador deberá integrar las etapas de construcción/publicación o
+configurar su invocación. Detalles y evidencia: [estabilización 0.6.0](docs/estabilizacion-0.6.0.md).

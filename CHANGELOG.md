@@ -4,7 +4,24 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-12
+
+Versión preparada; pendiente de publicación.
+
+### Corregido
+- UX de terminal: versión de una línea, catálogo agrupado y adaptable, estados prioritarios,
+  vistas previas identificadas y resultados vacíos explícitos; colores opcionales sin dependencias nuevas.
+- Rollback local ante errores de codificación y cancelación de entrada; adopción explícita de bloques sin lock.
+- Estado, plan e informe propios para cambios de las instrucciones compartidas.
+- `deploy --resume` recupera despliegues parciales adoptando únicamente contenido idéntico.
+- Recuperación de Releases parciales con checksums calculados sobre los bytes realmente publicados.
+
 ### Añadido
+- RFC-008: `cuypilot.toml`, `install`, `install --frozen`, `outdated`, `why`, `update --dry-run` y `audit --ci`
+  de integridad. Selección común entre destinos y rollback conjunto de manifiesto, archivos y locks.
+- Build en PR, smoke del wheel en venv limpio y matriz Ubuntu 3.11–3.14 / Windows 3.11 y 3.14.
+- Regresiones de errores parciales, guía de migración y ejemplo de CI para consumidores.
+- Versiones directas de herramientas de desarrollo y backend fijadas; runtime sin dependencias.
 - El CI crea una Release por cada tag `v*` con el wheel y su `SHA256SUMS`, para instalarlo sin un índice de paquetes y sin escribir en ramas protegidas. El CI también escucha `master` y `develop`.
 
 ### Documentación

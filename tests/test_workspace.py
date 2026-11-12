@@ -203,7 +203,12 @@ def test_v010_block_format_is_migrated(tmp_path):
     path = tmp_path / INSTRUCTIONS_PATH
     path.parent.mkdir(parents=True)
     path.write_text("# Mine\n\n<!-- cuypilot:start -->\n## Team conventions\nold\n<!-- cuypilot:end -->\n")
-    ws(tmp_path).add(["python-design"])
+    # La migración del formato antiguo sigue disponible, pero sin lock exige adopción explícita.
+    original = path.read_bytes()
+    with pytest.raises(CuypilotError, match="sin lockfile"):
+        ws(tmp_path).add(["python-design"])
+    assert path.read_bytes() == original
+    ws(tmp_path).add(["python-design"], force=True)
     text = path.read_text()
     assert text.count(START) == 1 and "old" not in text
     assert text.startswith("# Mine\n\n## Team conventions (managed by cuypilot")

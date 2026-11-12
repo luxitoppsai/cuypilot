@@ -1,11 +1,12 @@
 """Databricks simulado: no requiere credenciales ni modifica un workspace real."""
 
 import json
+import shutil
 from pathlib import Path
 
 import pytest
 
-from cuypilot.catalog import load_catalog
+from cuypilot.catalog import CATALOG_DIR, load_catalog
 from cuypilot.deploy import GenieDeployment
 from cuypilot.workspace import CuypilotError, Workspace
 
@@ -202,3 +203,86 @@ def test_cli_exact_missing_path_message_is_supported(tmp_path):
         return remote(command, cwd)
 
     assert GenieDeployment(ws, DESTINATION, run=runner).deploy()
+
+
+@pytest.mark.parametrize("failure_at", [1, 2, 3, 4])
+def test_resume_after_partial_initial_deploy_preserves_unrelated_rules(tmp_path, failure_at):
+    ws, remote = workspace(tmp_path), FakeDatabricks()
+    ws.add(["python-design"])
+    remote.files[f"{DESTINATION}/AGENTS.md"] = b"# Team\nPreserve this.\n"
+    count = 0
+
+    def runner(command, cwd):
+        nonlocal count
+        if command[2] == "import":
+            count += 1
+            if count == failure_at:
+                return 1, "connection lost"
+        return remote(command, cwd)
+
+    deploy = GenieDeployment(ws, DESTINATION, run=runner)
+    with pytest.raises(CuypilotError, match="--resume"):
+        deploy.deploy()
+    deploy.deploy(resume=True)
+    assert remote.files[f"{DESTINATION}/AGENTS.md"].startswith(b"# Team\nPreserve this.")
+    assert deploy.deploy() == []
+
+
+def test_resume_does_not_adopt_different_foreign_content(tmp_path):
+    ws, remote = workspace(tmp_path), FakeDatabricks()
+    ws.add(["python-design"])
+    relative = next(iter(ws.lock["python-design"]["files"]))
+    remote.files[f"{DESTINATION}/{relative}"] = b"different foreign data"
+    with pytest.raises(CuypilotError, match="ajeno o modificado"):
+        GenieDeployment(ws, DESTINATION, run=remote).deploy(resume=True)
+    assert not remote.writes
+
+
+def test_resume_handles_partially_deleted_registered_files(tmp_path):
+    ws, remote = workspace(tmp_path), FakeDatabricks()
+    ws.add(["python-design"])
+    deploy = GenieDeployment(ws, DESTINATION, run=remote)
+    deploy.deploy()
+    relative = next(iter(ws.lock["python-design"]["files"]))
+    del remote.files[f"{DESTINATION}/{relative}"]
+    ws.remove(["python-design"])
+    deploy.deploy(resume=True)
+    assert not remote.files
+
+
+def test_resume_after_partial_update_with_old_remote_lock(tmp_path):
+    catalog = tmp_path / "catalog"
+    shutil.copytree(CATALOG_DIR, catalog)
+    ws = Workspace(
+        tmp_path / "project",
+        load_catalog(catalog),
+        "0.6.0",
+        catalog,
+        target="genie",
+        confirm=lambda commands: True,
+    )
+    ws.add(["python-design"])
+    remote = FakeDatabricks()
+    GenieDeployment(ws, DESTINATION, run=remote).deploy()
+    for path in (
+        catalog / "skills/python-design/SKILL.md",
+        catalog / "skills/python-design/references/patterns.md",
+        catalog / "base/copilot-instructions.md",
+    ):
+        path.write_text(path.read_text() + "\nNew convention.\n")
+    ws.update()
+    count = 0
+
+    def runner(command, cwd):
+        nonlocal count
+        if command[2] == "import":
+            count += 1
+            if count == 3:
+                return 1, "connection lost"
+        return remote(command, cwd)
+
+    deploy = GenieDeployment(ws, DESTINATION, run=runner)
+    with pytest.raises(CuypilotError, match="Despliegue parcial"):
+        deploy.deploy()
+    deploy.deploy(resume=True)
+    assert deploy.deploy() == []

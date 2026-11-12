@@ -220,8 +220,8 @@ class Workspace:
         return items
 
     @contextmanager
-    def _transaction(self, items, force=False):
-        relatives = {self.lock_path, self.instructions_path, ".gitignore"}
+    def _transaction(self, items, force=False, extra_paths=()):
+        relatives = {self.lock_path, self.instructions_path, ".gitignore", *extra_paths}
         relatives.update(path for entry in self.lock.values() for path in entry["files"])
         relatives.update(path for item in items for path in self._targets(item))
         paths = [self._safe_path(path) for path in sorted(relatives)]
@@ -236,6 +236,8 @@ class Workspace:
                     raise CuypilotError("Bloque gestionado inválido: revisa los marcadores de cuypilot.")
                 if self.start in text and text.index(self.start) > text.index(self.end):
                     raise CuypilotError("Bloque gestionado inválido: marcadores invertidos.")
+                if self.start in text and not self.lock and not force:
+                    raise CuypilotError("Bloque gestionado sin lockfile; usa --force para adoptarlo.")
             snapshot[path] = (path.read_bytes(), path.stat().st_mode) if path.exists() else None
             for parent in path.parents:
                 if parent == self.root:
@@ -250,7 +252,7 @@ class Workspace:
         old_lock = copy.deepcopy(self.lock)
         try:
             yield
-        except (OSError, CuypilotError, KeyboardInterrupt):
+        except (OSError, UnicodeError, CuypilotError, EOFError, KeyboardInterrupt):
             self.lock = old_lock
             self.managed_hash = old_hash
             for path, saved in snapshot.items():
@@ -308,7 +310,7 @@ class Workspace:
         for item in new:
             self._install(item)
             report.done.append(item.name)
-        self._save()
+        self._save_report(report)
         return report
 
     @_transactional
@@ -358,7 +360,7 @@ class Workspace:
             report.notes.append(
                 f"{tool.name}: se quitó del proyecto; el programa `{tool.check[0]}` sigue instalado."
             )
-        self._save()
+        self._save_report(report)
         return report
 
     def status(self) -> dict[str, str]:
@@ -377,6 +379,33 @@ class Workspace:
         :returns: Qué se actualizó y qué se omitió.
         :raises CuypilotError: Si una pieza pedida no está instalada.
         """
+        pending, additions, report, commands = self._update_plan(names, force)
+        self._execute(commands)
+        for name in pending:
+            self._uninstall(name)
+            for item in self._resolve([name]):  # incluye requires nuevos
+                if item.name not in self.lock:
+                    self._install(item)
+                    report.done.append(item.name)
+        self._save_report(report)
+        return report
+
+    def plan_update(
+        self, names: list[str] | None = None, force: bool = False
+    ) -> tuple[Report, list[Command]]:
+        """Plan de actualización sin escribir ni ejecutar instaladores/configuración."""
+        items = self._resolve([n for n in (self.lock if names is None else names) if n in self.catalog])
+        with self._transaction(items, force=force):
+            pending, additions, report, commands = self._update_plan(names, force)
+            report.done = list(dict.fromkeys([*pending, *additions]))
+            instruction_changes = self.target.name != "copilot" and any(
+                self.catalog[name].type == "instruction" for name in report.done
+            )
+            if self.block_status() != OK or instruction_changes:
+                report.notes.append(f"Actualizar bloque compartido: {self.instructions_path}")
+            return report, commands
+
+    def _update_plan(self, names, force):
         names = sorted(self.lock) if names is None else names
         names = list(dict.fromkeys(names))
         missing = [n for n in names if n not in self.lock]
@@ -417,15 +446,8 @@ class Workspace:
             for item in {**{n: self.catalog[n] for n in pending}, **additions}.values()
             if isinstance(item, Tool)
         ]
-        self._execute([cmd for tool in tools for cmd in self._tool_commands(tool)])
-        for name in pending:
-            self._uninstall(name)
-            for item in self._resolve([name]):  # incluye requires nuevos
-                if item.name not in self.lock:
-                    self._install(item)
-                    report.done.append(item.name)
-        self._save()
-        return report
+        commands = [cmd for tool in tools for cmd in self._tool_commands(tool)]
+        return pending, additions, report, commands
 
     # --- internos -------------------------------------------------------------
 
@@ -515,6 +537,35 @@ class Workspace:
         match = self.block_pattern.search(path.read_text(encoding="utf-8")) if path.exists() else None
         return _sha(match[0].encode("utf-8")) if match else None
 
+    def block_status(self) -> str:
+        """Estado independiente del bloque compartido respecto al lock y al catálogo."""
+        digest = self._block_digest()
+        if self.managed_hash is not None and digest != self.managed_hash:
+            return MODIFIED
+        expected = _sha(self._expected_block().encode("utf-8")) if self.lock else None
+        return OK if digest == expected else OUTDATED
+
+    def _expected_block(self) -> str:
+        base = (self.catalog_dir / "base" / "copilot-instructions.md").read_text(encoding="utf-8")
+        rules = [
+            item.instructions.strip()
+            for name in sorted(self.lock)
+            if isinstance(item := self.catalog.get(name), Tool) and item.instructions
+        ]
+        if self.target.name != "copilot":
+            for _name, entry in sorted(self.lock.items()):
+                if entry["type"] == "instruction":
+                    for relative in entry["files"]:
+                        rules.append(self._safe_path(relative).read_text(encoding="utf-8").strip())
+        body = "\n\n".join([base.strip(), *rules])
+        return f"{HEADING} {self.start}\n{body}\n{self.end}"
+
+    def _save_report(self, report: Report) -> None:
+        before = self._block_digest()
+        self._save()
+        if before != self.managed_hash:
+            report.notes.append(f"Bloque compartido actualizado: {self.instructions_path}")
+
     def _status(self, name: str) -> str:
         if self.managed_hash is not None and self.managed_hash != self._block_digest():
             return MODIFIED
@@ -573,19 +624,7 @@ class Workspace:
         path = self._safe_path(self.instructions_path)
         text = path.read_text(encoding="utf-8") if path.exists() else ""
         if present:
-            base = (self.catalog_dir / "base" / "copilot-instructions.md").read_text(encoding="utf-8")
-            rules = [
-                item.instructions.strip()
-                for name in sorted(self.lock)
-                if isinstance(item := self.catalog.get(name), Tool) and item.instructions
-            ]
-            if self.target.name != "copilot":
-                for _name, entry in sorted(self.lock.items()):
-                    if entry["type"] == "instruction":
-                        for relative in entry["files"]:
-                            rules.append(self._safe_path(relative).read_text(encoding="utf-8").strip())
-            body = "\n\n".join([base.strip(), *rules])
-            block = f"{HEADING} {self.start}\n{body}\n{self.end}"
+            block = self._expected_block()
             if self.block_pattern.search(text):
                 text = self.block_pattern.sub(lambda _: block, text)
             else:
