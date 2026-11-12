@@ -85,3 +85,22 @@ def test_catalog_heading_is_not_duplicated(tmp_path, capsys):
     assert main(["list", "--type", "agent", "--path", str(tmp_path)]) == 0
     output = capsys.readouterr().out
     assert output.count("GitHub Copilot (VS Code)") == 1
+
+
+def test_wizard_runs_with_windows_legacy_output_encoding(tmp_path, monkeypatch):
+    import sys
+
+    from cuypilot.catalog import load_roles
+    from cuypilot.wizard import run_wizard
+
+    buffer = io.BytesIO()
+    stream = io.TextIOWrapper(buffer, encoding="cp1252", errors="strict")
+    monkeypatch.setattr(sys, "stdout", stream)
+    ws = Workspace(tmp_path, load_catalog(), "0.6.0")
+    # Incluye selección interactiva y progreso: ambos imprimían un carácter no representable.
+    answers = iter(["1", "", "n", "n", "s"])
+    assert run_wizard(ws, load_roles(), "0.6.0", ask=lambda prompt: next(answers)) == 0
+    stream.flush()
+    output = buffer.getvalue().decode("cp1252")
+    assert "[x]" in output and "[OK]" in output
+    assert ws.lock

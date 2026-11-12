@@ -9,6 +9,8 @@ Formato: [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/). Versionado
 Versión preparada; pendiente de publicación.
 
 ### Corregido
+- El wizard usa `[x]` y `[OK]` para selección y progreso: la marca Unicode de verificación fallaba
+  en terminales Windows con codificación cp1252, incluso después de instalar correctamente los archivos.
 - UX de terminal: versión de una línea, catálogo agrupado y adaptable, estados prioritarios,
   vistas previas identificadas y resultados vacíos explícitos; colores opcionales sin dependencias nuevas.
 - Rollback local ante errores de codificación y cancelación de entrada; adopción explícita de bloques sin lock.

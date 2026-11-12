@@ -122,10 +122,10 @@ def run_wizard(
     print(paint("\n  2/4 · Selección", "1;36"))
     if not assume_yes:
         print(paragraph(f"{len(chosen)} sugeridas para tu rol · {len(pieces)} disponibles"))
-        print("  [✓] sugerida · instalada = ya está en el proyecto")
+        print("  [x] sugerida · instalada = ya está en el proyecto")
         for i, name in enumerate(pieces, start=1):
             item = ws.catalog[name]
-            mark = "✓" if name in chosen else " "
+            mark = "x" if name in chosen else " "
             state = " · instalada" if name in ws.lock else ""
             if ws.target.name == "genie" and item.type == "agent":
                 state += " · se instala como skill"
@@ -182,7 +182,7 @@ def run_wizard(
     finally:
         ws.confirm = previous_confirm
     for index, name in enumerate(report.done, start=1):
-        print(f"  {paint('✓', '32')} [{index}/{len(report.done)}] {name}")
+        print(f"  {paint('[OK]', '32')} [{index}/{len(report.done)}] {name}")
     for name, reason in report.skipped.items():
         print(f"  - {name}: {reason}")
     for note in report.notes:
